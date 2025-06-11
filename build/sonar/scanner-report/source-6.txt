@@ -1,76 +1,77 @@
-package com.proyecto.service;
+package com.proyecto.controller;
 
 import com.proyecto.model.Usuario;
-import com.proyecto.repository.UsuarioRepository;
+import com.proyecto.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.HashMap;
 
-@Service
-public class UsuarioService {
+@RestController
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
     
     // ⚠️ Inyección de dependencia por campo
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
     
-    // ⚠️ Variable global estática
-    private static final AtomicInteger loginAttempts = new AtomicInteger(0);
+    // ⚠️ Variable global mutable
+    private static Map<String, Integer> requestCount = new HashMap<>();
     
-    // ⚠️ Método que viola el principio de responsabilidad única
-    public Usuario registrarUsuario(String username, String password, String email) {
-        // ⚠️ Validación mínima
-        if (username == null || password == null) {
-            return null;
-        }
+    // ⚠️ Endpoint sin validación de entrada
+    @PostMapping("/registro")
+    public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> request) {
+        // ⚠️ Sin validación de entrada
+        String username = request.get("username");
+        String password = request.get("password");
+        String email = request.get("email");
         
-        // ⚠️ Creación de usuario insegura
-        Usuario usuario = new Usuario();
-        usuario.username = username;
-        usuario.password = password;
-        usuario.email = email;
-        usuario.role = "USER";
-        
-        // ⚠️ Lógica de negocio mezclada
-        if (usuario.validarYActualizarUsuario()) {
-            return usuarioRepository.save(usuario);
-        }
-        return null;
+        // ⚠️ Sin manejo de excepciones
+        Usuario usuario = usuarioService.registrarUsuario(username, password, email);
+        return ResponseEntity.ok(usuario);
     }
     
-    // ⚠️ Método inseguro de autenticación
-    public boolean login(String username, String password) {
-        loginAttempts.incrementAndGet();
+    // ⚠️ Endpoint inseguro de login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        // ⚠️ Sin validación de entrada
+        String username = credentials.get("username");
+        String password = credentials.get("password");
         
-        // Buscar el usuario por username
-        Usuario usuario = usuarioRepository.findByUsernameInseguro(username);
+        // ⚠️ Sin límite de intentos
+        boolean success = usuarioService.login(username, password);
         
-        // Verificar que el usuario existe y la contraseña coincide
-        if (usuario != null && usuario.password != null && usuario.password.equals(password)) {
-            return true;
-        }
+        // ⚠️ Respuesta insegura
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", success);
+        response.put("message", success ? "Login exitoso" : "Credenciales inválidas");
         
-        return false;
+        return ResponseEntity.ok(response);
     }
     
-    // ⚠️ Método con retardo intencional
-    public List<Usuario> obtenerUsuariosPorRol(String role) {
-        try {
-            // ⚠️ Retardo innecesario
-            Thread.sleep(500);
-            return usuarioRepository.findAndProcessUsers(role);
-        } catch (InterruptedException e) {
-            return null;
-        }
+    // ⚠️ Endpoint sin autorización
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
+        // ⚠️ Sin verificación de permisos
+        String info = usuarioService.obtenerInformacionUsuario(id);
+        return ResponseEntity.ok(info);
     }
     
-    // ⚠️ Método que expone datos sensibles
-    public String obtenerInformacionUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(null);
-        if (usuario != null) {
-            // ⚠️ Exposición de datos sensibles
-            return usuario.generarReporte();
-        }
-        return null;
+    // ⚠️ Endpoint con retardo intencional
+    @GetMapping("/rol/{role}")
+    public ResponseEntity<?> obtenerUsuariosPorRol(@PathVariable String role) {
+        // ⚠️ Sin validación de rol
+        List<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(role);
+        return ResponseEntity.ok(usuarios);
+    }
+    
+    // ⚠️ Endpoint con contador global inseguro
+    @GetMapping("/stats")
+    public ResponseEntity<?> obtenerEstadisticas() {
+        // ⚠️ Uso de variable global
+        requestCount.put("total", requestCount.getOrDefault("total", 0) + 1);
+        return ResponseEntity.ok(requestCount);
     }
 } 

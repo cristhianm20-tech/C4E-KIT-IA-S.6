@@ -1,77 +1,41 @@
-package com.proyecto.controller;
+package com.proyecto.repository;
 
 import com.proyecto.model.Usuario;
-import com.proyecto.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
-@RestController
-@RequestMapping("/api/usuarios")
-public class UsuarioController {
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     
-    // ⚠️ Inyección de dependencia por campo
-    @Autowired
-    private UsuarioService usuarioService;
+    // ⚠️ Consulta SQL vulnerable a inyección
+    @Query(value = "SELECT * FROM usuarios WHERE username = :username", nativeQuery = true)
+    Usuario findByUsernameInseguro(@Param("username") String username);
     
-    // ⚠️ Variable global mutable
-    private static Map<String, Integer> requestCount = new HashMap<>();
+    // ⚠️ Consulta con retardo intencional
+    @Query(value = "SELECT * FROM usuarios WHERE role = :role", nativeQuery = true)
+    List<Usuario> findByRoleWithDelay(@Param("role") String role);
     
-    // ⚠️ Endpoint sin validación de entrada
-    @PostMapping("/registro")
-    public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> request) {
-        // ⚠️ Sin validación de entrada
-        String username = request.get("username");
-        String password = request.get("password");
-        String email = request.get("email");
-        
-        // ⚠️ Sin manejo de excepciones
-        Usuario usuario = usuarioService.registrarUsuario(username, password, email);
-        return ResponseEntity.ok(usuario);
+    // ⚠️ Método que mezcla responsabilidades
+    default List<Usuario> findAndProcessUsers(String role) {
+        try {
+            // ⚠️ Retardo intencional
+            Thread.sleep(1000);
+            
+            // ⚠️ Lógica de negocio en el repositorio
+            List<Usuario> usuarios = findByRoleWithDelay(role);
+            for (Usuario usuario : usuarios) {
+                usuario.validarYActualizarUsuario();
+            }
+            return usuarios;
+        } catch (InterruptedException e) {
+            return null;
+        }
     }
     
-    // ⚠️ Endpoint inseguro de login
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        // ⚠️ Sin validación de entrada
-        String username = credentials.get("username");
-        String password = credentials.get("password");
-        
-        // ⚠️ Sin límite de intentos
-        boolean success = usuarioService.login(username, password);
-        
-        // ⚠️ Respuesta insegura
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", success);
-        response.put("message", success ? "Login exitoso" : "Credenciales inválidas");
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    // ⚠️ Endpoint sin autorización
-    @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
-        // ⚠️ Sin verificación de permisos
-        String info = usuarioService.obtenerInformacionUsuario(id);
-        return ResponseEntity.ok(info);
-    }
-    
-    // ⚠️ Endpoint con retardo intencional
-    @GetMapping("/rol/{role}")
-    public ResponseEntity<?> obtenerUsuariosPorRol(@PathVariable String role) {
-        // ⚠️ Sin validación de rol
-        List<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(role);
-        return ResponseEntity.ok(usuarios);
-    }
-    
-    // ⚠️ Endpoint con contador global inseguro
-    @GetMapping("/stats")
-    public ResponseEntity<?> obtenerEstadisticas() {
-        // ⚠️ Uso de variable global
-        requestCount.put("total", requestCount.getOrDefault("total", 0) + 1);
-        return ResponseEntity.ok(requestCount);
-    }
+    // ⚠️ Consulta ineficiente
+    @Query(value = "SELECT * FROM usuarios WHERE LOWER(username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(email) LIKE LOWER(CONCAT('%', :search, '%'))", nativeQuery = true)
+    List<Usuario> searchUsersInefficient(@Param("search") String search);
 } 

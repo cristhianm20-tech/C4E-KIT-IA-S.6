@@ -1,10 +1,14 @@
 com/proyecto/service/UsuarioService.java
  com.proyecto.service.UsuarioService
+com/example/Utils.java
+ com.example.Utils
 com/proyecto/Application.java
  com.proyecto.Application
  com.proyecto.Application$1
 com/proyecto/controller/UsuarioController.java
  com.proyecto.controller.UsuarioController
+com/example/SecurityVulnerabilities.java
+ com.example.SecurityVulnerabilities
 com/proyecto/model/Usuario.java
  com.proyecto.model.Usuario
 com/proyecto/repository/UsuarioRepository.java

@@ -1,3 +1,4 @@
-y
-javaS2142^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here. 2!! 'F
-javaS1168+Return an empty collection instead of null. 2"" 
+U
+javaS1118:Add a private constructor to hide the implicit public one. 2 S
+javaS1069Replace this use of System.out or System.err by a logger. 2		 S
+javaS1069Replace this use of System.out or System.err by a logger. 2 
