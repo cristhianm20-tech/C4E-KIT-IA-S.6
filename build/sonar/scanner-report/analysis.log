@@ -40,6 +40,7 @@ Global server settings:
 Project server settings:
 Project scanner properties:
   - sonar.binaries=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/classes/java/main
+  - sonar.branch.name=develop
   - sonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
   - sonar.host.url=https://integracioncontinua.personalsoft.com
   - sonar.jacoco.reportPath=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/jacoco/test.exec
@@ -60,6 +61,7 @@ Project scanner properties:
   - sonar.projectKey=bad-practices-demo-IA
   - sonar.projectName=Backend-java-8-bad-practice
   - sonar.projectVersion=0.0.1-SNAPSHOT
+  - sonar.qualitygate.wait=true
   - sonar.scanner.app=ScannerGradle
   - sonar.scanner.appVersion=3.2-SNAPSHOT/Gradle 6.8.3
   - sonar.scm.provider=git

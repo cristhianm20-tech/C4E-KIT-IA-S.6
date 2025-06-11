@@ -55,6 +55,8 @@ sonarqube {
         property "sonar.java.binaries", "build/classes/java/main"
         property "sonar.java.test.binaries", "build/classes/java/test"
         property "sonar.verbose", "true"
+        property "sonar.qualitygate.wait", "true"
+        property "sonar.branch.name", "develop"
     }
 }
 
