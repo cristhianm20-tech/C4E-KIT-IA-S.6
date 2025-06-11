@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UsuarioController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Backend-java-8-bad-practice</a> &gt; <a href="index.source.html" class="el_package">com.proyecto.controller</a> &gt; <span class="el_source">UsuarioController.java</span></div><h1>UsuarioController.java</h1><pre class="source lang-java linenums">package com.proyecto.controller;
+
+import com.proyecto.model.Usuario;
+import com.proyecto.service.UsuarioService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+@RestController
+@RequestMapping(&quot;/api/usuarios&quot;)
+<span class="fc" id="L14">public class UsuarioController {</span>
+    
+    // ⚠️ Inyección de dependencia por campo
+    @Autowired
+    private UsuarioService usuarioService;
+    
+    // ⚠️ Variable global mutable
+<span class="fc" id="L21">    private static Map&lt;String, Integer&gt; requestCount = new HashMap&lt;&gt;();</span>
+    
+    // ⚠️ Endpoint sin validación de entrada
+    @PostMapping(&quot;/registro&quot;)
+    public ResponseEntity&lt;?&gt; registrarUsuario(@RequestBody Map&lt;String, String&gt; request) {
+        // ⚠️ Sin validación de entrada
+<span class="nc" id="L27">        String username = request.get(&quot;username&quot;);</span>
+<span class="nc" id="L28">        String password = request.get(&quot;password&quot;);</span>
+<span class="nc" id="L29">        String email = request.get(&quot;email&quot;);</span>
+        
+        // ⚠️ Sin manejo de excepciones
+<span class="nc" id="L32">        Usuario usuario = usuarioService.registrarUsuario(username, password, email);</span>
+<span class="nc" id="L33">        return ResponseEntity.ok(usuario);</span>
+    }
+    
+    // ⚠️ Endpoint inseguro de login
+    @PostMapping(&quot;/login&quot;)
+    public ResponseEntity&lt;?&gt; login(@RequestBody Map&lt;String, String&gt; credentials) {
+        // ⚠️ Sin validación de entrada
+<span class="nc" id="L40">        String username = credentials.get(&quot;username&quot;);</span>
+<span class="nc" id="L41">        String password = credentials.get(&quot;password&quot;);</span>
+        
+        // ⚠️ Sin límite de intentos
+<span class="nc" id="L44">        boolean success = usuarioService.login(username, password);</span>
+        
+        // ⚠️ Respuesta insegura
+<span class="nc" id="L47">        Map&lt;String, Object&gt; response = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L48">        response.put(&quot;success&quot;, success);</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        response.put(&quot;message&quot;, success ? &quot;Login exitoso&quot; : &quot;Credenciales inválidas&quot;);</span>
+        
+<span class="nc" id="L51">        return ResponseEntity.ok(response);</span>
+    }
+    
+    // ⚠️ Endpoint sin autorización
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;?&gt; obtenerUsuario(@PathVariable Long id) {
+        // ⚠️ Sin verificación de permisos
+<span class="nc" id="L58">        String info = usuarioService.obtenerInformacionUsuario(id);</span>
+<span class="nc" id="L59">        return ResponseEntity.ok(info);</span>
+    }
+    
+    // ⚠️ Endpoint con retardo intencional
+    @GetMapping(&quot;/rol/{role}&quot;)
+    public ResponseEntity&lt;?&gt; obtenerUsuariosPorRol(@PathVariable String role) {
+        // ⚠️ Sin validación de rol
+<span class="nc" id="L66">        List&lt;Usuario&gt; usuarios = usuarioService.obtenerUsuariosPorRol(role);</span>
+<span class="nc" id="L67">        return ResponseEntity.ok(usuarios);</span>
+    }
+    
+    // ⚠️ Endpoint con contador global inseguro
+    @GetMapping(&quot;/stats&quot;)
+    public ResponseEntity&lt;?&gt; obtenerEstadisticas() {
+        // ⚠️ Uso de variable global
+<span class="nc" id="L74">        requestCount.put(&quot;total&quot;, requestCount.getOrDefault(&quot;total&quot;, 0) + 1);</span>
+<span class="nc" id="L75">        return ResponseEntity.ok(requestCount);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

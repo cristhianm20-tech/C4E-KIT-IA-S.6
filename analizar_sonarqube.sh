@@ -10,28 +10,36 @@ echo -e "${AMARILLO}Iniciando análisis con SonarQube...${NC}"
 
 # Verificar que SonarQube esté corriendo
 if ! curl -s https://integracioncontinua.personalsoft.com > /dev/null; then
-    echo -e "${ROJO}Error: SonarQube no está corriendo en http://localhost:9000${NC}"
-    echo "Por favor, inicia SonarQube primero con: docker-compose up -d"
+    echo -e "${ROJO}Error: No se puede acceder a SonarQube${NC}"
     exit 1
 fi
 
-# Limpiar y compilar el proyecto
-echo -e "${AMARILLO}Limpiando y compilando el proyecto...${NC}"
-./gradlew clean build
+# Limpiar el proyecto
+echo -e "${AMARILLO}Limpiando el proyecto...${NC}"
+./gradlew clean
+
+# Compilar y ejecutar tests
+echo -e "${AMARILLO}Compilando y ejecutando tests...${NC}"
+./gradlew build
+
+# Generar reporte de JaCoCo
+echo -e "${AMARILLO}Generando reporte de cobertura...${NC}"
+./gradlew jacocoTestReport
+
+# Verificar que el reporte de JaCoCo existe
+if [ ! -f "build/reports/jacoco/test/jacocoTestReport.xml" ]; then
+    echo -e "${ROJO}Error: No se pudo generar el reporte de JaCoCo${NC}"
+    exit 1
+fi
 
 # Ejecutar el análisis de SonarQube
 echo -e "${AMARILLO}Ejecutando análisis de SonarQube...${NC}"
-./gradlew sonarqube \
-    -Dsonar.host.url=https://integracioncontinua.personalsoft.com \
-    -Dsonar.login=d7526b284077b90cce0345f4966c2d4502324ae9 \
-    -Dsonar.projectKey=bad-practices-demo-IA \
-    -Dsonar.scm.provider=git \
-    -Dsonar.coverage.jacoco.xmlReportPaths=build/test-results/test/TEST-com.proyecto.UsuarioServiceTest.xml
+./gradlew sonarqube --info
 
 # Verificar el resultado
 if [ $? -eq 0 ]; then
     echo -e "${VERDE}Análisis completado exitosamente${NC}"
-    echo -e "${AMARILLO}Puedes ver los resultados en: http://localhost:9000/dashboard?id=backend-java-8-bad-practice${NC}"
+    echo -e "${AMARILLO}Puedes ver los resultados en: https://integracioncontinua.personalsoft.com/dashboard?id=bad-practices-demo-IA${NC}"
 else
     echo -e "${ROJO}Error al ejecutar el análisis${NC}"
     exit 1

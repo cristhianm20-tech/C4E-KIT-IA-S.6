@@ -1,0 +1,71 @@
+SonarQube plugins:
+  - Cobertura 2.0 (cobertura)
+  - CSS Code Quality and Security 1.4.2.2002 (cssfamily)
+  - Scala Code Quality and Security 1.8.3.2219 (sonarscala)
+  - 1C (BSL) Community Plugin 1.11.0 (communitybsl)
+  - Sonar Devon4j Plugin 2020.12.002 (devon4j)
+  - C# Code Quality and Security 8.22.0.31243 (csharp)
+  - Java Code Quality and Security 6.15.1.26025 (java)
+  - Rust language analyzer 0.0.9 (communityrust)
+  - HTML Code Quality and Security 3.4.0.2754 (web)
+  - Flex Code Quality and Security 2.6.1.2564 (flex)
+  - XML Code Quality and Security 2.2.0.2973 (xml)
+  - Sonar WebDriver Plugin 1.0.5 (webdriver)
+  - VB.NET Code Quality and Security 8.22.0.31243 (vbnet)
+  - Community Branch Plugin 1.8.1 (communityBranchPlugin)
+  - YAML Analyzer 1.7.0 (yaml)
+  - Python Code Quality and Security 3.4.1.8066 (python)
+  - Code Smells 4.0.0 (smells)
+  - Clover 4.1 (clover)
+  - Go Code Quality and Security 1.8.3.2219 (go)
+  - JaCoCo 1.1.1.1157 (jacoco)
+  - Kotlin Code Quality and Security 1.8.3.2219 (kotlin)
+  - ShellCheck Analyzer 2.5.0 (shellcheck)
+  - JavaScript/TypeScript Code Quality and Security 7.4.4.15624 (javascript)
+  - Ruby Code Quality and Security 1.8.3.2219 (ruby)
+  - Groovy 1.8 (groovy)
+  - OpenEdge 2.14.4 (openedge)
+  - PHP Code Quality and Security 3.17.0.7439 (php)
+Global server settings:
+  - email.smtp_host.secured=******
+  - email.smtp_port.secured=******
+  - email.smtp_secure_connection.secured=******
+  - sonar.core.id=C3D0F322-AVjZvhGbD2ES8Y2-Zz0I
+  - sonar.core.startTime=2025-05-29T12:45:43+0000
+  - sonar.dbcleaner.branchesToKeepWhenInactive=master,develop,trunk,branch-.*,release-.*
+  - sonar.forceAuthentication=true
+  - sonar.lf.logoUrl=https://www.google.com/a/cpanel/personalsoft.com.co/images/logo.gif
+  - sonar.plugins.risk.consent=ACCEPTED
+  - sonar.python.file.suffixes=.py
+Project server settings:
+Project scanner properties:
+  - sonar.binaries=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/classes/java/main
+  - sonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
+  - sonar.host.url=https://integracioncontinua.personalsoft.com
+  - sonar.jacoco.reportPath=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/jacoco/test.exec
+  - sonar.jacoco.reportPaths=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/jacoco/test.exec
+  - sonar.java.binaries=build/classes/java/main
+  - sonar.java.coveragePlugin=jacoco
+  - sonar.java.jdkHome=/Users/cristhian/.sdkman/candidates/java/11.0.26-amzn
+  - sonar.java.libraries=/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.7.0/7bf2381d030023970b5375c1090545e480467aa1/spring-boot-starter-web-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-data-jpa/2.7.0/773d8c4fbe92493655f4c7db3a2d95388b8f6eb8/spring-boot-starter-data-jpa-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/com.h2database/h2/1.4.200/f7533fe7cb8e99c87a43d325a77b4b678ad9031a/h2-1.4.200.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-json/2.7.0/f7120f4a6fd5dd2ca2128061e420e45ae2294943/spring-boot-starter-json-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-aop/2.7.0/49f204ec9672800932f8f7b344221251b1422da6/spring-boot-starter-aop-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-jdbc/2.7.0/dd69f21efd63a2a...
+  - sonar.java.source=11
+  - sonar.java.target=11
+  - sonar.java.test.binaries=build/classes/java/test
+  - sonar.java.test.libraries=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/classes/java/main,/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/resources/main,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.7.0/7bf2381d030023970b5375c1090545e480467aa1/spring-boot-starter-web-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-data-jpa/2.7.0/773d8c4fbe92493655f4c7db3a2d95388b8f6eb8/spring-boot-starter-data-jpa-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/com.h2database/h2/1.4.200/f7533fe7cb8e99c87a43d325a77b4b678ad9031a/h2-1.4.200.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-test/2.7.0/417764bfd907f7deffd617fb31b3ea0900547287/spring-boot-starter-test-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-json/...
+  - sonar.junit.reportPaths=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/test-results/test
+  - sonar.junit.reportsPath=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/test-results/test
+  - sonar.libraries=/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.7.0/7bf2381d030023970b5375c1090545e480467aa1/spring-boot-starter-web-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-data-jpa/2.7.0/773d8c4fbe92493655f4c7db3a2d95388b8f6eb8/spring-boot-starter-data-jpa-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/com.h2database/h2/1.4.200/f7533fe7cb8e99c87a43d325a77b4b678ad9031a/h2-1.4.200.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-json/2.7.0/f7120f4a6fd5dd2ca2128061e420e45ae2294943/spring-boot-starter-json-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-aop/2.7.0/49f204ec9672800932f8f7b344221251b1422da6/spring-boot-starter-aop-2.7.0.jar,/Users/cristhian/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-jdbc/2.7.0/dd69f21efd63a2a...
+  - sonar.login=******
+  - sonar.projectBaseDir=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice
+  - sonar.projectKey=bad-practices-demo-IA
+  - sonar.projectName=Backend-java-8-bad-practice
+  - sonar.projectVersion=0.0.1-SNAPSHOT
+  - sonar.scanner.app=ScannerGradle
+  - sonar.scanner.appVersion=3.2-SNAPSHOT/Gradle 6.8.3
+  - sonar.scm.provider=git
+  - sonar.sourceEncoding=UTF-8
+  - sonar.sources=src/main/java
+  - sonar.surefire.reportsPath=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/test-results/test
+  - sonar.tests=src/test/java
+  - sonar.verbose=true
+  - sonar.working.directory=/Users/cristhian/Documents/Copilot/C4E-KIT-IA-S.6./Backend-java-8-bad-practice/build/sonar
