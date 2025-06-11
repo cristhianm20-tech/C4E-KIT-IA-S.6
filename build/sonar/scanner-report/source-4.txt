@@ -1,41 +1,37 @@
-package com.proyecto.repository;
+package com.proyecto;
 
-import com.proyecto.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import java.util.List;
+// ⚠️ Importaciones desorganizadas y mezcla de paquetes
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import java.util.concurrent.atomic.AtomicInteger;
 
-@Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+@SpringBootApplication
+public class Application {
     
-    // ⚠️ Consulta SQL vulnerable a inyección
-    @Query(value = "SELECT * FROM usuarios WHERE username = :username", nativeQuery = true)
-    Usuario findByUsernameInseguro(@Param("username") String username);
+    // ⚠️ Variable global estática mutable
+    public static final AtomicInteger GLOBAL_COUNTER = new AtomicInteger(0);
     
-    // ⚠️ Consulta con retardo intencional
-    @Query(value = "SELECT * FROM usuarios WHERE role = :role", nativeQuery = true)
-    List<Usuario> findByRoleWithDelay(@Param("role") String role);
-    
-    // ⚠️ Método que mezcla responsabilidades
-    default List<Usuario> findAndProcessUsers(String role) {
-        try {
-            // ⚠️ Retardo intencional
-            Thread.sleep(1000);
-            
-            // ⚠️ Lógica de negocio en el repositorio
-            List<Usuario> usuarios = findByRoleWithDelay(role);
-            for (Usuario usuario : usuarios) {
-                usuario.validarYActualizarUsuario();
-            }
-            return usuarios;
-        } catch (InterruptedException e) {
-            return null;
-        }
+    // ⚠️ Método principal con configuración insegura
+    public static void main(String[] args) {
+        // ⚠️ Configuración de seguridad deshabilitada
+        System.setProperty("spring.security.user.password", "admin123");
+        SpringApplication.run(Application.class, args);
     }
     
-    // ⚠️ Consulta ineficiente
-    @Query(value = "SELECT * FROM usuarios WHERE LOWER(username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(email) LIKE LOWER(CONCAT('%', :search, '%'))", nativeQuery = true)
-    List<Usuario> searchUsersInefficient(@Param("search") String search);
+    // ⚠️ Configuración CORS insegura
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("*")
+                        .allowedHeaders("*");
+            }
+        };
+    }
 } 

@@ -40,6 +40,8 @@ dependencies {
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.21'
 }
 
+project.tasks['sonarqube'].dependsOn 'jacocoTestReport'
+
 // ⚠️ Configuración de SonarQube con exclusiones problemáticas
 sonarqube {
     properties {
@@ -66,6 +68,7 @@ jacoco {
 }
 
 jacocoTestReport {
+    dependsOn test // Asegura que los tests se ejecuten antes de generar el reporte
     reports {
         xml.enabled true
         xml.destination file("build/reports/jacoco/test/jacocoTestReport.xml")
