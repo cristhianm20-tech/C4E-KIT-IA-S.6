@@ -1,0 +1,85 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.0' // Versión antigua intencionalmente
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.sonarqube' version '3.0'
+    id 'jacoco'
+}
+
+// ⚠️ Configuración intencionalmente problemática: Java 11 forzado
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+// ⚠️ Repositorios no oficiales intencionalmente incluidos
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' } // Repositorio no oficial
+    maven { url 'https://jitpack.io' } // Repositorio no oficial
+}
+
+// ⚠️ Dependencias con versiones antiguas y vulnerables
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'com.h2database:h2:1.4.200' // Versión antigua con vulnerabilidades conocidas
+    
+    // ⚠️ Dependencias de logging con configuraciones inseguras
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    
+    // ⚠️ JUnit 4 en lugar de JUnit 5
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    //testImplementation 'org.springframework.security:spring-security-test'
+    
+    // ⚠️ JMH para benchmarks ineficientes
+    testImplementation 'org.openjdk.jmh:jmh-core:1.21'
+    testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.21'
+}
+
+// ⚠️ Configuración de SonarQube con exclusiones problemáticas
+sonarqube {
+    properties {
+        property "sonar.projectKey", "bad-practices-demo-IA"
+        property "sonar.host.url", "https://integracioncontinua.personalsoft.com"
+        property "sonar.exclusions", "**/model/**,**/dto/**"
+        property "sonar.login", "d7526b284077b90cce0345f4966c2d4502324ae9" // Excluir paquetes importantes
+    }
+}
+
+// ⚠️ Configuración de JaCoCo con exclusiones problemáticas
+jacoco {
+    toolVersion = "0.8.5"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/model/**',
+                '**/dto/**',
+                '**/config/**'
+            ])
+        }))
+    }
+}
+
+// ⚠️ Task de benchmark ineficiente
+task benchmark(type: JavaExec) {
+    main = 'org.openjdk.jmh.Main'
+    classpath = sourceSets.test.runtimeClasspath
+    args = ['-f', '1', '-wi', '5', '-i', '5', '-r', '1s', '-w', '1s'] // Configuración ineficiente
+}
+
+// Configuración de tests
+test {
+    useJUnit()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat = 'full'
+    }
+} 

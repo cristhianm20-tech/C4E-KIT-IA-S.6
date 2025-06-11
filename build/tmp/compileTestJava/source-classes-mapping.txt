@@ -1,0 +1,2 @@
+com/proyecto/UsuarioServiceTest.java
+ com.proyecto.UsuarioServiceTest
