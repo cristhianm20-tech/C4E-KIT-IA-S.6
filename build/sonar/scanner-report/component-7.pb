@@ -1,1 +1,1 @@
- 2javaX=hr-src/main/java/com/proyecto/model/Usuario.java
+ 2javaXMhr<src/main/java/com/proyecto/controller/UsuarioController.java
