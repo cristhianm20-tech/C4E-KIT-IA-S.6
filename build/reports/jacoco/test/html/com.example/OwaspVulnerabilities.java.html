@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OwaspVulnerabilities.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Backend-java-8-bad-practice</a> &gt; <a href="index.source.html" class="el_package">com.example</a> &gt; <span class="el_source">OwaspVulnerabilities.java</span></div><h1>OwaspVulnerabilities.java</h1><pre class="source lang-java linenums">package com.example;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+<span class="nc" id="L15">public class OwaspVulnerabilities {</span>
+    
+    // A01:2021 – Broken Access Control
+    public void insecureAccessControl(HttpServletRequest request, HttpServletResponse response) {
+<span class="nc" id="L19">        String userRole = request.getParameter(&quot;role&quot;);</span>
+        // Vulnerabilidad: No verificar permisos antes de cambiar roles
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (userRole != null) {</span>
+<span class="nc" id="L22">            HttpSession session = request.getSession();</span>
+<span class="nc" id="L23">            session.setAttribute(&quot;userRole&quot;, userRole);</span>
+        }
+<span class="nc" id="L25">    }</span>
+
+    // A02:2021 – Cryptographic Failures
+    public String insecurePasswordStorage(String password) {
+        try {
+            // Vulnerabilidad: Uso de MD5 que es criptográficamente inseguro
+<span class="nc" id="L31">            MessageDigest md = MessageDigest.getInstance(&quot;MD5&quot;);</span>
+<span class="nc" id="L32">            byte[] hash = md.digest(password.getBytes());</span>
+<span class="nc" id="L33">            return Base64.getEncoder().encodeToString(hash);</span>
+<span class="nc" id="L34">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L35">            return null;</span>
+        }
+    }
+
+    // A03:2021 – Injection
+    public void sqlInjection(String userInput) {
+        try {
+            // Vulnerabilidad: SQL Injection
+<span class="nc" id="L43">            String query = &quot;SELECT * FROM users WHERE username = '&quot; + userInput + &quot;'&quot;;</span>
+            // Ejecutar query...
+<span class="nc" id="L45">        } catch (Exception e) {</span>
+<span class="nc" id="L46">            e.printStackTrace();</span>
+<span class="nc" id="L47">        }</span>
+<span class="nc" id="L48">    }</span>
+
+    // A04:2021 – Insecure Design
+    public void insecureFileUpload(String fileName, byte[] fileContent) {
+        try {
+            // Vulnerabilidad: No validar el tipo de archivo ni el contenido
+<span class="nc" id="L54">            Files.write(Paths.get(&quot;/uploads/&quot; + fileName), fileContent);</span>
+<span class="nc" id="L55">        } catch (IOException e) {</span>
+<span class="nc" id="L56">            e.printStackTrace();</span>
+<span class="nc" id="L57">        }</span>
+<span class="nc" id="L58">    }</span>
+
+    // A05:2021 – Security Misconfiguration
+    public void insecureConfiguration() {
+        // Vulnerabilidad: Configuración insegura de seguridad
+<span class="nc" id="L63">        System.setProperty(&quot;javax.net.ssl.trustStore&quot;, &quot;truststore.jks&quot;);</span>
+<span class="nc" id="L64">        System.setProperty(&quot;javax.net.ssl.trustStorePassword&quot;, &quot;password123&quot;);</span>
+<span class="nc" id="L65">    }</span>
+
+    // A06:2021 – Vulnerable and Outdated Components
+    public void vulnerableComponent() {
+        // Vulnerabilidad: Uso de componente vulnerable (simulado)
+        // En un caso real, sería una dependencia con una versión vulnerable
+<span class="nc" id="L71">        String vulnerableVersion = &quot;1.0.0&quot;;</span>
+<span class="nc" id="L72">        System.out.println(&quot;Using vulnerable component version: &quot; + vulnerableVersion);</span>
+<span class="nc" id="L73">    }</span>
+
+    // A07:2021 – Identification and Authentication Failures
+    public boolean weakAuthentication(String username, String password) {
+        // Vulnerabilidad: Autenticación débil
+<span class="nc bnc" id="L78" title="All 4 branches missed.">        return username.equals(&quot;admin&quot;) &amp;&amp; password.equals(&quot;admin123&quot;);</span>
+    }
+
+    // A08:2021 – Software and Data Integrity Failures
+    public void insecureDeserialization(String serializedData) {
+        try {
+            // Vulnerabilidad: Deserialización insegura
+<span class="nc" id="L85">            Object obj = new java.io.ObjectInputStream(</span>
+<span class="nc" id="L86">                new java.io.ByteArrayInputStream(serializedData.getBytes())</span>
+<span class="nc" id="L87">            ).readObject();</span>
+<span class="nc" id="L88">        } catch (Exception e) {</span>
+<span class="nc" id="L89">            e.printStackTrace();</span>
+<span class="nc" id="L90">        }</span>
+<span class="nc" id="L91">    }</span>
+
+    // A09:2021 – Security Logging and Monitoring Failures
+    public void insecureLogging(String sensitiveData) {
+        // Vulnerabilidad: Logging inseguro de datos sensibles
+<span class="nc" id="L96">        System.out.println(&quot;User data: &quot; + sensitiveData);</span>
+<span class="nc" id="L97">    }</span>
+
+    // A10:2021 – Server-Side Request Forgery (SSRF)
+    public void ssrfVulnerability(String url) {
+        try {
+            // Vulnerabilidad: SSRF
+<span class="nc" id="L103">            java.net.URL urlObj = new java.net.URL(url);</span>
+<span class="nc" id="L104">            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) urlObj.openConnection();</span>
+<span class="nc" id="L105">            conn.getResponseCode();</span>
+<span class="nc" id="L106">        } catch (Exception e) {</span>
+<span class="nc" id="L107">            e.printStackTrace();</span>
+<span class="nc" id="L108">        }</span>
+<span class="nc" id="L109">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

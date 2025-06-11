@@ -1,1 +1,1 @@
- 2javaXLhr6src/main/java/com/proyecto/service/UsuarioService.java
+ 2javaX=hr-src/main/java/com/proyecto/model/Usuario.java
