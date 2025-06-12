@@ -6,24 +6,24 @@ source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 # Instala y usa JDK 11
 echo "Instalando Java 11..."
-sdk install java 11.0.26-amzn
-sdk use java 11.0.26-amzn
+#sdk install java 11.0.26-amzn
+sdk use java 17.0.15
 
 # Verifica la versión de Java
 echo "Verificando versión de Java..."
 java -version
 
 # Instala y usa Gradle 6.8.3
-echo "Instalando Gradle 6.8.3..."
-sdk install gradle 6.8.3
-sdk use gradle 6.8.3
+echo "Instalando Gradle 8.5..."
+sdk install gradle 8.5
+sdk use gradle 8.5
 
 echo "Verificando versión de Gradle..."
 gradle -v
 
 # Genera el wrapper con la versión correcta
 echo "Generando wrapper de Gradle..."
-gradle wrapper --gradle-version 6.8.3
+gradle wrapper --gradle-version 8.5
 
 # Limpia el proyecto
 echo "Limpiando proyecto..."
