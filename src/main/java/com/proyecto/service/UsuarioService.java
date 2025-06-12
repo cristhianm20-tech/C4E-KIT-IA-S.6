@@ -4,8 +4,6 @@ import com.proyecto.model.Usuario;
 import com.proyecto.repository.UsuarioRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,9 +46,9 @@ public class UsuarioService {
             .map(usuario -> usuario.getPassword().equals(password)) // Aquí deberías usar passwordEncoder.matches(password, usuario.getPassword())
             .orElse(false);
     }
-    public Page<Usuario> obtenerUsuariosPorRol(String role, Pageable pageable) {
+    public Usuario obtenerUsuariosPorRol(String role) {
         log.debug("Buscando usuarios por rol: {}", role);
-        return usuarioRepository.findByRole(role, pageable);
+        return usuarioRepository.findByRole(role);
     }
     
     public Optional<Usuario> obtenerUsuario(Long id) {
@@ -58,9 +56,9 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
     
-    public Page<Usuario> buscarUsuarios(String searchTerm, Pageable pageable) {
+    public Usuario buscarUsuarios(String searchTerm) {
         log.debug("Buscando usuarios que coincidan con: {}", searchTerm);
-        return usuarioRepository.searchUsers(searchTerm, pageable);
+        return usuarioRepository.searchUsers(searchTerm);
     }
     
     @Transactional

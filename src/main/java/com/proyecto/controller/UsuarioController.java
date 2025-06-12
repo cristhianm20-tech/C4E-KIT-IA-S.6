@@ -58,23 +58,21 @@ public class UsuarioController {
     
     @GetMapping("/rol/{role}")
     //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UsuarioDTO>> obtenerUsuariosPorRol(
-            @PathVariable String role,
-            Pageable pageable) {
+    public ResponseEntity<UsuarioDTO> obtenerUsuariosPorRol(
+            @PathVariable String role) {
         log.debug("REST request para obtener usuarios por rol : {}", role);
-        Page<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(role, pageable);
-        Page<UsuarioDTO> result = usuarios.map(usuarioMapper::toDTO);
+        Usuario usuarios = usuarioService.obtenerUsuariosPorRol(role);
+        UsuarioDTO result = usuarioMapper.toDTO(usuarios);
         return ResponseEntity.ok(result);
     }
     
     @GetMapping("/search")
     //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UsuarioDTO>> buscarUsuarios(
-            @RequestParam String searchTerm,
-            Pageable pageable) {
+    public ResponseEntity<UsuarioDTO> buscarUsuarios(
+            @RequestParam String searchTerm) {
         log.debug("REST request para buscar usuarios : {}", searchTerm);
-        Page<Usuario> usuarios = usuarioService.buscarUsuarios(searchTerm, pageable);
-        Page<UsuarioDTO> result = usuarios.map(usuarioMapper::toDTO);
+        Usuario usuarios = usuarioService.buscarUsuarios(searchTerm);
+        UsuarioDTO result = usuarioMapper.toDTO(usuarios);
         return ResponseEntity.ok(result);
     }
     

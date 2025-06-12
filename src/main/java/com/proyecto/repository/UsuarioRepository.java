@@ -1,7 +1,6 @@
 package com.proyecto.repository;
 
 import com.proyecto.model.Usuario;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +20,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT u FROM Usuario u WHERE " +
            "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Usuario searchUsers(@Param("search") String search, Pageable pageable);
+    Usuario searchUsers(@Param("search") String search);
     
     boolean existsByUsername(String username);
     

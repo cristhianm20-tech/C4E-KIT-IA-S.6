@@ -96,18 +96,15 @@ class UsuarioServiceTest {
         // Arrange
         List<Usuario> usuarios = new ArrayList<>();
         usuarios.add(testUser);
-        Page<Usuario> page = new PageImpl<>(usuarios);
-        when(usuarioRepository.findByRole(eq("USER"), any(Pageable.class))).thenReturn(page);
-        
+        when(usuarioRepository.findByRole(eq("USER"))).thenReturn(usuarios.get(0));
+
         // Act
-        Page<Usuario> result = usuarioService.obtenerUsuariosPorRol("USER", pageable);
+        Usuario result = usuarioService.obtenerUsuariosPorRol("USER");
         
         // Assert
         assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.getTotalElements());
-        assertEquals(testUser.getUsername(), result.getContent().get(0).getUsername());
-        verify(usuarioRepository).findByRole(eq("USER"), any(Pageable.class));
+        assertEquals(testUser.getUsername(), result.getUsername());
+        verify(usuarioRepository).findByRole(eq("USER"));
     }
     
     @Test
@@ -129,17 +126,16 @@ class UsuarioServiceTest {
         // Arrange
         List<Usuario> usuarios = new ArrayList<>();
         usuarios.add(testUser);
-        Page<Usuario> page = new PageImpl<>(usuarios);
-        when(usuarioRepository.searchUsers(anyString(), any(Pageable.class))).thenReturn(page);
+        Usuario page = usuarios.get(0);
+        when(usuarioRepository.searchUsers(anyString())).thenReturn(page);
         
         // Act
-        Page<Usuario> result = usuarioService.buscarUsuarios("test", pageable);
+        Usuario result = usuarioService.buscarUsuarios("test");
         
         // Assert
         assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals(1, result.getTotalElements());
-        verify(usuarioRepository).searchUsers(eq("test"), any(Pageable.class));
+        assertEquals(testUser.getUsername(), result.getUsername());
+        verify(usuarioRepository).searchUsers(eq("test"));
     }
     
     @Test
