@@ -10,8 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +46,7 @@ public class UsuarioController {
     
     @GetMapping("/{id}")
     //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
-    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable Long id) {
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable(value = "id") Long id) {
         log.debug("REST request para obtener Usuario : {}", id);
         return usuarioService.obtenerUsuario(id)
             .map(usuarioMapper::toDTO)
@@ -78,7 +76,7 @@ public class UsuarioController {
     
     @DeleteMapping("/{id}")
     //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable(value = "id") Long id) {
         log.debug("REST request para eliminar Usuario : {}", id);
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build();
@@ -87,7 +85,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
     public ResponseEntity<UsuarioDTO> actualizarUsuario(
-            @PathVariable Long id,
+            @PathVariable(value = "id") Long id,
             @Valid @RequestBody UsuarioDTO usuarioDTO) {
         log.debug("REST request para actualizar Usuario : {}, {}", id, usuarioDTO);
         if (!id.equals(usuarioDTO.getId())) {
