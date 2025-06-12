@@ -1,2 +1,2 @@
 
- (2javaX™hr2src/test/java/com/proyecto/UsuarioServiceTest.java
+ 2javaX%hr4src/main/java/com/proyecto/mapper/UsuarioMapper.java

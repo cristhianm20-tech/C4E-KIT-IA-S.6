@@ -12,12 +12,11 @@ public class UsuarioMapper {
             return null;
         }
         
-        UsuarioDTO dto = new UsuarioDTO();
+        var dto = new UsuarioDTO();
         dto.setId(usuario.getId());
         dto.setUsername(usuario.getUsername());
         dto.setEmail(usuario.getEmail());
         dto.setRole(usuario.getRole());
-        // Don't map password for security
         return dto;
     }
     
@@ -26,11 +25,11 @@ public class UsuarioMapper {
             return null;
         }
         
-        Usuario usuario = new Usuario();
+        var usuario = new Usuario();
         usuario.setId(dto.getId());
         usuario.setUsername(dto.getUsername());
         usuario.setEmail(dto.getEmail());
-        usuario.setPassword(dto.getPassword()); // Password will be encoded in service layer
+        usuario.setPassword(dto.getPassword());
         usuario.setRole(dto.getRole());
         return usuario;
     }

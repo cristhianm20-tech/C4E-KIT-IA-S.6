@@ -2,76 +2,83 @@
 
 import com.proyecto.model.Usuario;
 import com.proyecto.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 @Service
-<span class="fc" id="L11">public class UsuarioService {</span>
+<span class="fc" id="L14">@RequiredArgsConstructor</span>
+@Transactional(readOnly = true)
+public class UsuarioService {
     
-    // ⚠️ Inyección de dependencia por campo
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+<span class="fc" id="L18">    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);</span>
     
-    // ⚠️ Variable global estática
-<span class="fc" id="L18">    private static final AtomicInteger loginAttempts = new AtomicInteger(0);</span>
-    
-    // ⚠️ Método que viola el principio de responsabilidad única
-    public Usuario registrarUsuario(String username, String password, String email) {
-        // ⚠️ Validación mínima
-<span class="pc bpc" id="L23" title="2 of 4 branches missed.">        if (username == null || password == null) {</span>
-<span class="nc" id="L24">            return null;</span>
+    private final UsuarioRepository usuarioRepository;
+
+    @Transactional
+    public Usuario registrarUsuario(@Valid Usuario usuario) {
+<span class="fc" id="L24">        log.debug(&quot;Registrando nuevo usuario: {}&quot;, usuario.getUsername());</span>
+        
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (usuarioRepository.existsByUsername(usuario.getUsername())) {</span>
+<span class="fc" id="L27">            throw new IllegalArgumentException(&quot;El nombre de usuario ya existe&quot;);</span>
         }
         
-        // ⚠️ Creación de usuario insegura
-<span class="fc" id="L28">        Usuario usuario = new Usuario();</span>
-<span class="fc" id="L29">        usuario.username = username;</span>
-<span class="fc" id="L30">        usuario.password = password;</span>
-<span class="fc" id="L31">        usuario.email = email;</span>
-<span class="fc" id="L32">        usuario.role = &quot;USER&quot;;</span>
-        
-        // ⚠️ Lógica de negocio mezclada
-<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if (usuario.validarYActualizarUsuario()) {</span>
-<span class="fc" id="L36">            return usuarioRepository.save(usuario);</span>
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (usuarioRepository.existsByEmail(usuario.getEmail())) {</span>
+<span class="nc" id="L31">            throw new IllegalArgumentException(&quot;El email ya está registrado&quot;);</span>
         }
-<span class="nc" id="L38">        return null;</span>
+        
+<span class="fc" id="L34">        usuario.setPassword(usuario.getPassword());</span>
+<span class="fc" id="L35">        usuario.setRole(&quot;USER&quot;);</span>
+        
+<span class="fc" id="L37">        return usuarioRepository.save(usuario);</span>
     }
     
-    // ⚠️ Método inseguro de autenticación
-    public boolean login(String username, String password) {
-<span class="fc" id="L43">        loginAttempts.incrementAndGet();</span>
+    public boolean autenticar(String username, String password) {
+<span class="fc" id="L41">        log.debug(&quot;Intentando autenticar usuario: {}&quot;, username);</span>
         
-        // Buscar el usuario por username
-<span class="fc" id="L46">        Usuario usuario = usuarioRepository.findByUsernameInseguro(username);</span>
-        
-        // Verificar que el usuario existe y la contraseña coincide
-<span class="pc bpc" id="L49" title="1 of 6 branches missed.">        if (usuario != null &amp;&amp; usuario.password != null &amp;&amp; usuario.password.equals(password)) {</span>
-<span class="fc" id="L50">            return true;</span>
-        }
-        
-<span class="fc" id="L53">        return false;</span>
+<span class="fc" id="L43">        return usuarioRepository.findByUsername(username)</span>
+<span class="fc" id="L44">            .map(usuario -&gt; usuario.getPassword().equals(password))</span>
+<span class="fc" id="L45">            .orElse(false);</span>
+    }
+    public Usuario obtenerUsuariosPorRol(String role) {
+<span class="fc" id="L48">        log.debug(&quot;Buscando usuarios por rol: {}&quot;, role);</span>
+<span class="fc" id="L49">        return usuarioRepository.findByRole(role);</span>
     }
     
-    // ⚠️ Método con retardo intencional
-    public List&lt;Usuario&gt; obtenerUsuariosPorRol(String role) {
-        try {
-            // ⚠️ Retardo innecesario
-<span class="fc" id="L60">            Thread.sleep(500);</span>
-<span class="fc" id="L61">            return usuarioRepository.findAndProcessUsers(role);</span>
-<span class="nc" id="L62">        } catch (InterruptedException e) {</span>
-<span class="nc" id="L63">            return null;</span>
-        }
+    public Optional&lt;Usuario&gt; obtenerUsuario(Long id) {
+<span class="fc" id="L53">        log.debug(&quot;Buscando usuario por ID: {}&quot;, id);</span>
+<span class="fc" id="L54">        return usuarioRepository.findById(id);</span>
     }
     
-    // ⚠️ Método que expone datos sensibles
-    public String obtenerInformacionUsuario(Long id) {
-<span class="fc" id="L69">        Usuario usuario = usuarioRepository.findById(id).orElse(null);</span>
-<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (usuario != null) {</span>
-            // ⚠️ Exposición de datos sensibles
-<span class="fc" id="L72">            return usuario.generarReporte();</span>
-        }
-<span class="nc" id="L74">        return null;</span>
+    public Usuario buscarUsuarios(String searchTerm) {
+<span class="fc" id="L58">        log.debug(&quot;Buscando usuarios que coincidan con: {}&quot;, searchTerm);</span>
+<span class="fc" id="L59">        return usuarioRepository.searchUsers(searchTerm);</span>
+    }
+    
+    @Transactional
+    public void eliminarUsuario(Long id) {
+<span class="fc" id="L64">        log.debug(&quot;Eliminando usuario con ID: {}&quot;, id);</span>
+<span class="fc" id="L65">        usuarioRepository.deleteById(id);</span>
+<span class="fc" id="L66">    }</span>
+    
+    @Transactional
+    public Usuario actualizarUsuario(Long id, @Valid Usuario usuarioActualizado) {
+<span class="fc" id="L70">        log.debug(&quot;Actualizando usuario con ID: {}&quot;, id);</span>
+        
+<span class="fc" id="L72">        return usuarioRepository.findById(id)</span>
+<span class="fc" id="L73">            .map(usuario -&gt; {</span>
+<span class="fc" id="L74">                usuario.setUsername(usuarioActualizado.getUsername());</span>
+<span class="fc" id="L75">                usuario.setEmail(usuarioActualizado.getEmail());</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">                if (usuarioActualizado.getPassword() != null) {</span>
+<span class="nc" id="L77">                    usuario.setPassword(usuarioActualizado.getPassword());</span>
+                }
+<span class="fc" id="L79">                return usuarioRepository.save(usuario);</span>
+            })
+<span class="fc" id="L81">            .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Usuario no encontrado&quot;));</span>
     }
 } 
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

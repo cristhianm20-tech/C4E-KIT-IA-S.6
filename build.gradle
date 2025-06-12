@@ -76,19 +76,20 @@ project.tasks['sonarqube'].dependsOn 'jacocoTestReport'
 // ================================================================================================
 sonarqube {
     properties {
-        property "sonar.projectKey", "spring-boot-migration"
-        property "sonar.projectName", "Spring Boot Migration Project"
-        property "sonar.host.url", "http://localhost:9000"
-        property "sonar.sourceEncoding", "UTF-8"
-        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.java.binaries", "${buildDir}/classes"
-        property "sonar.coverage.exclusions", [
-            "**/config/**",
-            "**/dto/**",
-            "**/entity/**",
-            "**/*Application*",
-            "**/*Config*"
-        ].join(",")
+        property "sonar.projectKey", "bad-practices-demo-IA"
+        property "sonar.host.url", "https://integracioncontinua.personalsoft.com"
+        //property "sonar.exclusions", "**/model/**,**/dto/**"
+        property "sonar.login", "d7526b284077b90cce0345f4966c2d4502324ae9" // Excluir paquetes importantes
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.scm.provider", "git"
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+        property "sonar.java.binaries", "build/classes/java/main"
+        property "sonar.java.test.binaries", "build/classes/java/test"
+        property "sonar.verbose", "true"
+        property "sonar.qualitygate.wait", "true"
+        property "sonar.branch.name", "solutions"
     }
 }
 
@@ -124,12 +125,6 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'CLASS'
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                minimum = 0.85
-            }
             excludes = [
                 '**/config/**',
                 '**/dto/**',

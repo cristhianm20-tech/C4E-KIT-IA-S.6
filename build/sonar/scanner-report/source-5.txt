@@ -1,41 +1,92 @@
-package com.proyecto.repository;
+package com.proyecto.controller;
 
-import com.proyecto.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import java.util.List;
+import com.proyecto.dto.LoginRequestDTO;
+import com.proyecto.dto.LoginResponseDTO;
+import com.proyecto.dto.UsuarioDTO;
+import com.proyecto.mapper.UsuarioMapper;
+import com.proyecto.service.UsuarioService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+@RestController
+@RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
+public class UsuarioController {
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
     
-    // ⚠️ Consulta SQL vulnerable a inyección
-    @Query(value = "SELECT * FROM usuarios WHERE username = :username", nativeQuery = true)
-    Usuario findByUsernameInseguro(@Param("username") String username);
+    private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
     
-    // ⚠️ Consulta con retardo intencional
-    @Query(value = "SELECT * FROM usuarios WHERE role = :role", nativeQuery = true)
-    List<Usuario> findByRoleWithDelay(@Param("role") String role);
-    
-    // ⚠️ Método que mezcla responsabilidades
-    default List<Usuario> findAndProcessUsers(String role) {
-        try {
-            // ⚠️ Retardo intencional
-            Thread.sleep(1000);
-            
-            // ⚠️ Lógica de negocio en el repositorio
-            List<Usuario> usuarios = findByRoleWithDelay(role);
-            for (Usuario usuario : usuarios) {
-                usuario.validarYActualizarUsuario();
-            }
-            return usuarios;
-        } catch (InterruptedException e) {
-            return null;
-        }
+    @PostMapping("/registro")
+    public ResponseEntity<UsuarioDTO> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para registrar Usuario : {}", usuarioDTO);
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.registrarUsuario(usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
     }
     
-    // ⚠️ Consulta ineficiente
-    @Query(value = "SELECT * FROM usuarios WHERE LOWER(username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(email) LIKE LOWER(CONCAT('%', :search, '%'))", nativeQuery = true)
-    List<Usuario> searchUsersInefficient(@Param("search") String search);
-} 
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        log.debug("REST request para login : {}", loginRequest.getUsername());
+        boolean success = usuarioService.autenticar(loginRequest.getUsername(), loginRequest.getPassword());
+        
+        LoginResponseDTO response = LoginResponseDTO.builder()
+            .success(success)
+            .message(success ? "Login exitoso" : "Credenciales inválidas")
+            .build();
+            
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable(value = "id") Long id) {
+        log.debug("REST request para obtener Usuario : {}", id);
+        return usuarioService.obtenerUsuario(id)
+            .map(usuarioMapper::toDTO)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @GetMapping("/rol/{role}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuariosPorRol(
+            @PathVariable String role) {
+        log.debug("REST request para obtener usuarios por rol : {}", role);
+        var usuarios = usuarioService.obtenerUsuariosPorRol(role);
+        var result = usuarioMapper.toDTO(usuarios);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<UsuarioDTO> buscarUsuarios(
+            @RequestParam String searchTerm) {
+        log.debug("REST request para buscar usuarios : {}", searchTerm);
+        var usuarios = usuarioService.buscarUsuarios(searchTerm);
+        var result = usuarioMapper.toDTO(usuarios);
+        return ResponseEntity.ok(result);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable(value = "id") Long id) {
+        log.debug("REST request para eliminar Usuario : {}", id);
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> actualizarUsuario(
+            @PathVariable(value = "id") Long id,
+            @Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para actualizar Usuario : {}, {}", id, usuarioDTO);
+        if (!id.equals(usuarioDTO.getId())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.actualizarUsuario(id, usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
+    }
+}

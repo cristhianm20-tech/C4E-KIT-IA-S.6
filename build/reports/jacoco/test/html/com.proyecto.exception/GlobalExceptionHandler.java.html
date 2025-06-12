@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">C4E-KIT-IA-S.6</a> &gt; <a href="index.source.html" class="el_package">com.proyecto.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.proyecto.exception;
+
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@ControllerAdvice
+<span class="nc" id="L18">public class GlobalExceptionHandler {</span>
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Object&gt; handleValidationExceptions(
+            MethodArgumentNotValidException ex, WebRequest request) {
+<span class="nc" id="L23">        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L24">        ex.getBindingResult().getAllErrors().forEach((error) -&gt; {</span>
+<span class="nc" id="L25">            var fieldName = ((FieldError) error).getField();</span>
+<span class="nc" id="L26">            var errorMessage = error.getDefaultMessage();</span>
+<span class="nc" id="L27">            errors.put(fieldName, errorMessage);</span>
+<span class="nc" id="L28">        });</span>
+
+<span class="nc" id="L30">        Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L31">        body.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L32">        body.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="nc" id="L33">        body.put(&quot;errors&quot;, errors);</span>
+
+<span class="nc" id="L35">        return new ResponseEntity&lt;&gt;(body, HttpStatus.BAD_REQUEST);</span>
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity&lt;Object&gt; handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+<span class="nc" id="L41">        Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L42">        body.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L43">        body.put(&quot;status&quot;, HttpStatus.CONFLICT.value());</span>
+<span class="nc" id="L44">        body.put(&quot;error&quot;, &quot;Error de integridad de datos&quot;);</span>
+<span class="nc" id="L45">        body.put(&quot;message&quot;, &quot;El recurso ya existe o viola una restricción de la base de datos&quot;);</span>
+
+<span class="nc" id="L47">        return new ResponseEntity&lt;&gt;(body, HttpStatus.CONFLICT);</span>
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity&lt;Object&gt; handleConstraintViolation(
+            ConstraintViolationException ex, WebRequest request) {
+<span class="nc" id="L53">        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L54">        ex.getConstraintViolations().forEach(violation -&gt; {</span>
+<span class="nc" id="L55">            var fieldName = violation.getPropertyPath().toString();</span>
+<span class="nc" id="L56">            var errorMessage = violation.getMessage();</span>
+<span class="nc" id="L57">            errors.put(fieldName, errorMessage);</span>
+<span class="nc" id="L58">        });</span>
+
+<span class="nc" id="L60">        Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L61">        body.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L62">        body.put(&quot;status&quot;, HttpStatus.BAD_REQUEST.value());</span>
+<span class="nc" id="L63">        body.put(&quot;errors&quot;, errors);</span>
+
+<span class="nc" id="L65">        return new ResponseEntity&lt;&gt;(body, HttpStatus.BAD_REQUEST);</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Object&gt; handleAllUncaughtException(
+            Exception ex, WebRequest request) {
+<span class="nc" id="L71">        Map&lt;String, Object&gt; body = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L72">        body.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L73">        body.put(&quot;status&quot;, HttpStatus.INTERNAL_SERVER_ERROR.value());</span>
+<span class="nc" id="L74">        body.put(&quot;error&quot;, &quot;Error interno del servidor&quot;);</span>
+<span class="nc" id="L75">        body.put(&quot;message&quot;, &quot;Ha ocurrido un error inesperado&quot;);</span>
+
+<span class="nc" id="L77">        return new ResponseEntity&lt;&gt;(body, HttpStatus.INTERNAL_SERVER_ERROR);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

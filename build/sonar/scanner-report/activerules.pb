@@ -317,9 +317,9 @@ ParseError(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRSS
 bsl-language-server	MagicDate"7
 authorizedDates$00010101,00010101000000,000101010000(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRSF
 bsl-language-server	TryNumber(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRS¶
-bsl-language-serverRedundantAccessToObject"
-checkObjectModuletrue"
-checkRecordSetModuletrue"
+bsl-language-serverRedundantAccessToObject"
+checkRecordSetModuletrue"
+checkObjectModuletrue"
 checkFormModuletrue(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRSO
 bsl-language-serverCommonModuleAssign(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRSU
 bsl-language-serverUnsafeSafeModeMethodCall(êÕÉ—Ä00êÕÉ—Ä0:AYAKIOgnD0zKJUwWlyRSO
@@ -3393,10 +3393,10 @@ typescriptS2092(ê˙Ù–Ä00ê˙Ù–Ä0:AWQku42pyDndz3tg5Gz8q
 grvy'org.codenarc.rule.basic.EmptyMethodRule(≠É—Ä00≠É—Ä0:AYAKINptD0zKJUwWlwSYD
 
 common-phpDuplicatedBlocks(∏éÓ•¬,0∏éÓ•¬,:AWQku4etyDndz3tg5Gvmì
-yamlCommentsCheck"
+yamlCommentsCheck"
+ignore-shebangsfalse"
 require-starting-spacetrue"
-min-spaces-from-content2"
-ignore-shebangsfalse(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUel
+min-spaces-from-content2(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUel
 yamlTruthyCheck"
 allowed-valuestrue, false"
 
@@ -3412,9 +3412,9 @@ check-keystrue(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUeh
 yamlKeyDuplicatesCheck(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUeë
 yamlIndentationCheck"
 spaces
-consistent"!
-check-multi-line-stringsfalse"
-indent-sequencestrue(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUe
+consistent"
+indent-sequencestrue"!
+check-multi-line-stringsfalse(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUe
 yamlCommasCheck"
 max-spaces-before0"
 max-spaces-after1"
@@ -3439,10 +3439,10 @@ consistent"!
 min-spaces-inside0(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUeQ
 yamlHyphensCheck"
 max-spaces-after1(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUeô
-yamlLineLengthCheck"!
+yamlLineLengthCheck"	
+max80"!
 allow-non-breakable-wordstrue",
-#allow-non-breakable-inline-mappingsfalse"	
-max80(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUee
+#allow-non-breakable-inline-mappingsfalse(ÿµÉ—Ä00ÿµÉ—Ä0:AYAKINr8D0zKJUwWlwUee
 yamlEmptyLinesCheck"
 	max-start0"
 max-end0"

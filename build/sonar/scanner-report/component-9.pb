@@ -1,1 +1,1 @@
-	 2javaXLhr6src/main/java/com/proyecto/service/UsuarioService.java
+	 2javaXPhr@src/main/java/com/proyecto/exception/GlobalExceptionHandler.java

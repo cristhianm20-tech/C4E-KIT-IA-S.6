@@ -4,14 +4,12 @@ import com.proyecto.dto.LoginRequestDTO;
 import com.proyecto.dto.LoginResponseDTO;
 import com.proyecto.dto.UsuarioDTO;
 import com.proyecto.mapper.UsuarioMapper;
-import com.proyecto.model.Usuario;
 import com.proyecto.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,8 +24,8 @@ public class UsuarioController {
     @PostMapping("/registro")
     public ResponseEntity<UsuarioDTO> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
         log.debug("REST request para registrar Usuario : {}", usuarioDTO);
-        Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
-        Usuario result = usuarioService.registrarUsuario(usuario);
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.registrarUsuario(usuario);
         return ResponseEntity.ok(usuarioMapper.toDTO(result));
     }
     
@@ -45,7 +43,6 @@ public class UsuarioController {
     }
     
     @GetMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
     public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable(value = "id") Long id) {
         log.debug("REST request para obtener Usuario : {}", id);
         return usuarioService.obtenerUsuario(id)
@@ -55,27 +52,24 @@ public class UsuarioController {
     }
     
     @GetMapping("/rol/{role}")
-    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioDTO> obtenerUsuariosPorRol(
             @PathVariable String role) {
         log.debug("REST request para obtener usuarios por rol : {}", role);
-        Usuario usuarios = usuarioService.obtenerUsuariosPorRol(role);
-        UsuarioDTO result = usuarioMapper.toDTO(usuarios);
+        var usuarios = usuarioService.obtenerUsuariosPorRol(role);
+        var result = usuarioMapper.toDTO(usuarios);
         return ResponseEntity.ok(result);
     }
     
     @GetMapping("/search")
-    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioDTO> buscarUsuarios(
             @RequestParam String searchTerm) {
         log.debug("REST request para buscar usuarios : {}", searchTerm);
-        Usuario usuarios = usuarioService.buscarUsuarios(searchTerm);
-        UsuarioDTO result = usuarioMapper.toDTO(usuarios);
+        var usuarios = usuarioService.buscarUsuarios(searchTerm);
+        var result = usuarioMapper.toDTO(usuarios);
         return ResponseEntity.ok(result);
     }
     
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable(value = "id") Long id) {
         log.debug("REST request para eliminar Usuario : {}", id);
         usuarioService.eliminarUsuario(id);
@@ -83,7 +77,6 @@ public class UsuarioController {
     }
     
     @PutMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
     public ResponseEntity<UsuarioDTO> actualizarUsuario(
             @PathVariable(value = "id") Long id,
             @Valid @RequestBody UsuarioDTO usuarioDTO) {
@@ -91,9 +84,9 @@ public class UsuarioController {
         if (!id.equals(usuarioDTO.getId())) {
             return ResponseEntity.badRequest().build();
         }
-        
-        Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
-        Usuario result = usuarioService.actualizarUsuario(id, usuario);
+
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.actualizarUsuario(id, usuario);
         return ResponseEntity.ok(usuarioMapper.toDTO(result));
     }
 }

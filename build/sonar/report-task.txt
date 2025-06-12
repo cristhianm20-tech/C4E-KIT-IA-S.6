@@ -1,7 +1,7 @@
 projectKey=bad-practices-demo-IA
 serverUrl=https://integracioncontinua.personalsoft.com
 serverVersion=8.9.10.61524
-branch=develop
-dashboardUrl=https://integracioncontinua.personalsoft.com/dashboard?id=bad-practices-demo-IA&branch=develop
-ceTaskId=AZdgUrItcnsevBYsJboY
-ceTaskUrl=https://integracioncontinua.personalsoft.com/api/ce/task?id=AZdgUrItcnsevBYsJboY
+branch=solutions
+dashboardUrl=https://integracioncontinua.personalsoft.com/dashboard?id=bad-practices-demo-IA&branch=solutions
+ceTaskId=AZdk6U9FcnsevBYsJboi
+ceTaskUrl=https://integracioncontinua.personalsoft.com/api/ce/task?id=AZdk6U9FcnsevBYsJboi
