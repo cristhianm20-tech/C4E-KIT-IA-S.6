@@ -2,75 +2,86 @@ package com.proyecto.service;
 
 import com.proyecto.model.Usuario;
 import com.proyecto.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UsuarioService {
     
-    // ⚠️ Inyección de dependencia por campo
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
     
-    // ⚠️ Variable global estática
-    private static final AtomicInteger loginAttempts = new AtomicInteger(0);
-    
-    // ⚠️ Método que viola el principio de responsabilidad única
-    public Usuario registrarUsuario(String username, String password, String email) {
-        // ⚠️ Validación mínima
-        if (username == null || password == null) {
-            return null;
+    private final UsuarioRepository usuarioRepository;
+    //private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public Usuario registrarUsuario(@Valid Usuario usuario) {
+        log.debug("Registrando nuevo usuario: {}", usuario.getUsername());
+        
+        if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya existe");
         }
         
-        // ⚠️ Creación de usuario insegura
-        Usuario usuario = new Usuario();
-        usuario.username = username;
-        usuario.password = password;
-        usuario.email = email;
-        usuario.role = "USER";
-        
-        // ⚠️ Lógica de negocio mezclada
-        if (usuario.validarYActualizarUsuario()) {
-            return usuarioRepository.save(usuario);
+        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+            throw new IllegalArgumentException("El email ya está registrado");
         }
-        return null;
+        
+        usuario.setPassword(usuario.getPassword()); // Aquí deberías codificar la contraseña
+        usuario.setRole("USER");
+        
+        return usuarioRepository.save(usuario);
     }
     
-    // ⚠️ Método inseguro de autenticación
-    public boolean login(String username, String password) {
-        loginAttempts.incrementAndGet();
+    public boolean autenticar(String username, String password) {
+        log.debug("Intentando autenticar usuario: {}", username);
         
-        // Buscar el usuario por username
-        Usuario usuario = usuarioRepository.findByUsernameInseguro(username);
-        
-        // Verificar que el usuario existe y la contraseña coincide
-        if (usuario != null && usuario.password != null && usuario.password.equals(password)) {
-            return true;
-        }
-        
-        return false;
+        return usuarioRepository.findByUsername(username)
+            .map(usuario -> usuario.getPassword().equals(password)) // Aquí deberías usar passwordEncoder.matches(password, usuario.getPassword())
+            .orElse(false);
+    }
+    public Page<Usuario> obtenerUsuariosPorRol(String role, Pageable pageable) {
+        log.debug("Buscando usuarios por rol: {}", role);
+        return usuarioRepository.findByRole(role, pageable);
     }
     
-    // ⚠️ Método con retardo intencional
-    public List<Usuario> obtenerUsuariosPorRol(String role) {
-        try {
-            // ⚠️ Retardo innecesario
-            Thread.sleep(500);
-            return usuarioRepository.findAndProcessUsers(role);
-        } catch (InterruptedException e) {
-            return null;
-        }
+    public Optional<Usuario> obtenerUsuario(Long id) {
+        log.debug("Buscando usuario por ID: {}", id);
+        return usuarioRepository.findById(id);
     }
     
-    // ⚠️ Método que expone datos sensibles
-    public String obtenerInformacionUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(null);
-        if (usuario != null) {
-            // ⚠️ Exposición de datos sensibles
-            return usuario.generarReporte();
-        }
-        return null;
+    public Page<Usuario> buscarUsuarios(String searchTerm, Pageable pageable) {
+        log.debug("Buscando usuarios que coincidan con: {}", searchTerm);
+        return usuarioRepository.searchUsers(searchTerm, pageable);
+    }
+    
+    @Transactional
+    public void eliminarUsuario(Long id) {
+        log.debug("Eliminando usuario con ID: {}", id);
+        usuarioRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public Usuario actualizarUsuario(Long id, @Valid Usuario usuarioActualizado) {
+        log.debug("Actualizando usuario con ID: {}", id);
+        
+        return usuarioRepository.findById(id)
+            .map(usuario -> {
+                usuario.setUsername(usuarioActualizado.getUsername());
+                usuario.setEmail(usuarioActualizado.getEmail());
+                if (usuarioActualizado.getPassword() != null) {
+                    usuario.setPassword(usuarioActualizado.getPassword()); // Aquí deberías codificar la contraseña
+                }
+                return usuarioRepository.save(usuario);
+            })
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
     }
 } 

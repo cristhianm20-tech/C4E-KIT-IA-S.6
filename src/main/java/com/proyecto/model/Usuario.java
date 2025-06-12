@@ -1,61 +1,54 @@
 package com.proyecto.model;
 
-// ⚠️ Importaciones innecesarias y desorganizadas
-import javax.persistence.*;
-import java.util.Date;
-import java.util.Random;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
+@Data
+@NoArgsConstructor
 public class Usuario {
     
-    // ⚠️ Campos públicos
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
-    public String username;
-    public String password; // ⚠️ Contraseña en texto plano
-    public String email;
-    public String role;
-    public Date fechaCreacion;
+    @NotBlank(message = "El nombre de usuario es obligatorio")
+    @Size(min = 3, max = 50, message = "El nombre de usuario debe tener entre 3 y 50 caracteres")
+    @Column(unique = true)
+    private String username;
     
-    // ⚠️ Constructor vacío público
-    public Usuario() {
-        this.fechaCreacion = new Date();
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    private String password;
+    
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe ser válido")
+    @Column(unique = true)
+    private String email;
+    
+    @NotBlank(message = "El rol es obligatorio")
+    private String role;
+    
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
+      @PrePersist
+    protected void onCreate() {
+        fechaCreacion = LocalDateTime.now();
     }
     
-    // ⚠️ Método inseguro para generar contraseña
-    public static String generarPassword() {
-        // ⚠️ Generación de contraseña débil
-        return "pass" + new Random().nextInt(1000);
+    public boolean esAdmin() {
+        return "ADMIN".equalsIgnoreCase(this.role);
     }
     
-    // ⚠️ Método que mezcla responsabilidades
-    public boolean validarYActualizarUsuario() {
-        // ⚠️ Lógica de negocio en el modelo
-        if (username == null || username.length() < 3) {
-            return false;
-        }
-        
-        // ⚠️ Actualización de estado
-        this.fechaCreacion = new Date();
-        
-        // ⚠️ Validación de email insegura
-        if (email != null && email.contains("@")) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    // ⚠️ Método que viola el principio de responsabilidad única
-    public String generarReporte() {
-        StringBuilder reporte = new StringBuilder();
-        reporte.append("Usuario: ").append(username).append("\n");
-        reporte.append("Email: ").append(email).append("\n");
-        reporte.append("Rol: ").append(role).append("\n");
-        reporte.append("Fecha creación: ").append(fechaCreacion).append("\n");
-        return reporte.toString();
+    @Override
+    public String toString() {
+        return String.format("Usuario[id=%d, username='%s', email='%s', role='%s']",
+            id, username, email, role);
     }
 } 

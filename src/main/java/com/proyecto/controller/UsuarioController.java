@@ -1,77 +1,103 @@
 package com.proyecto.controller;
 
+import com.proyecto.dto.LoginRequestDTO;
+import com.proyecto.dto.LoginResponseDTO;
+import com.proyecto.dto.UsuarioDTO;
+import com.proyecto.mapper.UsuarioMapper;
 import com.proyecto.model.Usuario;
 import com.proyecto.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
 public class UsuarioController {
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
     
-    // ⚠️ Inyección de dependencia por campo
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
     
-    // ⚠️ Variable global mutable
-    private static Map<String, Integer> requestCount = new HashMap<>();
-    
-    // ⚠️ Endpoint sin validación de entrada
     @PostMapping("/registro")
-    public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> request) {
-        // ⚠️ Sin validación de entrada
-        String username = request.get("username");
-        String password = request.get("password");
-        String email = request.get("email");
-        
-        // ⚠️ Sin manejo de excepciones
-        Usuario usuario = usuarioService.registrarUsuario(username, password, email);
-        return ResponseEntity.ok(usuario);
+    public ResponseEntity<UsuarioDTO> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para registrar Usuario : {}", usuarioDTO);
+        Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
+        Usuario result = usuarioService.registrarUsuario(usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
     }
     
-    // ⚠️ Endpoint inseguro de login
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        // ⚠️ Sin validación de entrada
-        String username = credentials.get("username");
-        String password = credentials.get("password");
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        log.debug("REST request para login : {}", loginRequest.getUsername());
+        boolean success = usuarioService.autenticar(loginRequest.getUsername(), loginRequest.getPassword());
         
-        // ⚠️ Sin límite de intentos
-        boolean success = usuarioService.login(username, password);
-        
-        // ⚠️ Respuesta insegura
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", success);
-        response.put("message", success ? "Login exitoso" : "Credenciales inválidas");
-        
+        LoginResponseDTO response = LoginResponseDTO.builder()
+            .success(success)
+            .message(success ? "Login exitoso" : "Credenciales inválidas")
+            .build();
+            
         return ResponseEntity.ok(response);
     }
     
-    // ⚠️ Endpoint sin autorización
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
-        // ⚠️ Sin verificación de permisos
-        String info = usuarioService.obtenerInformacionUsuario(id);
-        return ResponseEntity.ok(info);
+    //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable Long id) {
+        log.debug("REST request para obtener Usuario : {}", id);
+        return usuarioService.obtenerUsuario(id)
+            .map(usuarioMapper::toDTO)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
     
-    // ⚠️ Endpoint con retardo intencional
     @GetMapping("/rol/{role}")
-    public ResponseEntity<?> obtenerUsuariosPorRol(@PathVariable String role) {
-        // ⚠️ Sin validación de rol
-        List<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(role);
-        return ResponseEntity.ok(usuarios);
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UsuarioDTO>> obtenerUsuariosPorRol(
+            @PathVariable String role,
+            Pageable pageable) {
+        log.debug("REST request para obtener usuarios por rol : {}", role);
+        Page<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol(role, pageable);
+        Page<UsuarioDTO> result = usuarios.map(usuarioMapper::toDTO);
+        return ResponseEntity.ok(result);
     }
     
-    // ⚠️ Endpoint con contador global inseguro
-    @GetMapping("/stats")
-    public ResponseEntity<?> obtenerEstadisticas() {
-        // ⚠️ Uso de variable global
-        requestCount.put("total", requestCount.getOrDefault("total", 0) + 1);
-        return ResponseEntity.ok(requestCount);
+    @GetMapping("/search")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<UsuarioDTO>> buscarUsuarios(
+            @RequestParam String searchTerm,
+            Pageable pageable) {
+        log.debug("REST request para buscar usuarios : {}", searchTerm);
+        Page<Usuario> usuarios = usuarioService.buscarUsuarios(searchTerm, pageable);
+        Page<UsuarioDTO> result = usuarios.map(usuarioMapper::toDTO);
+        return ResponseEntity.ok(result);
     }
-} 
+    
+    @DeleteMapping("/{id}")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        log.debug("REST request para eliminar Usuario : {}", id);
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/{id}")
+    //@PreAuthorize("hasRole('ADMIN') or @securityService.isOwner(#id)")
+    public ResponseEntity<UsuarioDTO> actualizarUsuario(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para actualizar Usuario : {}, {}", id, usuarioDTO);
+        if (!id.equals(usuarioDTO.getId())) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
+        Usuario result = usuarioService.actualizarUsuario(id, usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
+    }
+}

@@ -3,151 +3,189 @@ package com.proyecto;
 import com.proyecto.model.Usuario;
 import com.proyecto.service.UsuarioService;
 import com.proyecto.repository.UsuarioRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
-import static org.junit.Assert.*;
+import java.util.Optional;
+import java.util.ArrayList;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Transactional
-public class UsuarioServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class UsuarioServiceTest {
     
-    @Autowired
-    private UsuarioService usuarioService;
-    
-    @Autowired
+    @Mock
     private UsuarioRepository usuarioRepository;
     
+    @InjectMocks
+    private UsuarioService usuarioService;
+    
     private Usuario testUser;
+    private Pageable pageable;
     
-    @Before
-    public void setup() {
-        // Limpiamos la base de datos antes de cada test
-        usuarioRepository.deleteAll();
-        
-        // Creamos y guardamos el usuario de prueba
+    @BeforeEach
+    void setup() {
         testUser = new Usuario();
-        testUser.username = "testuser";
-        testUser.password = "password123";
-        testUser.email = "test@test.com";
-        testUser.role = "USER";
-        testUser = usuarioRepository.save(testUser);
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setPassword("password123");
+        testUser.setEmail("test@test.com");
+        testUser.setRole("USER");
         
-        // Verificamos que el usuario se guardó correctamente
-        assertNotNull("El usuario de prueba no debería ser null", testUser);
-        assertNotNull("El ID del usuario de prueba no debería ser null", testUser.id);
+        pageable = PageRequest.of(0, 10);
     }
     
     @Test
-    public void testRegistrarUsuario() {
-        // Registramos un nuevo usuario
-        Usuario nuevoUsuario = usuarioService.registrarUsuario("newuser", "pass123", "new@test.com");
+    void deberiaRegistrarUsuarioExitosamente() {
+        // Arrange
+        when(usuarioRepository.existsByUsername(testUser.getUsername())).thenReturn(false);
+        when(usuarioRepository.existsByEmail(testUser.getEmail())).thenReturn(false);
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(testUser);
         
-        // Verificamos que el usuario se registró correctamente
-        assertNotNull("El usuario no debería ser null", nuevoUsuario);
-        assertNotNull("El ID del usuario no debería ser null", nuevoUsuario.id);
-        assertEquals("El username debería coincidir", "newuser", nuevoUsuario.username);
-        assertEquals("El email debería coincidir", "new@test.com", nuevoUsuario.email);
-        assertEquals("El rol debería ser USER", "USER", nuevoUsuario.role);
+        // Act
+        Usuario result = usuarioService.registrarUsuario(testUser);
         
-        // Verificamos que el usuario existe en la base de datos
-        Usuario usuarioGuardado = usuarioRepository.findById(nuevoUsuario.id).orElse(null);
-        assertNotNull("El usuario debería existir en la base de datos", usuarioGuardado);
-        assertEquals("El username debería coincidir", "newuser", usuarioGuardado.username);
+        // Assert
+        assertNotNull(result);
+        assertEquals(testUser.getUsername(), result.getUsername());
+        assertEquals(testUser.getEmail(), result.getEmail());
+        assertEquals("USER", result.getRole());
+        verify(usuarioRepository).save(any(Usuario.class));
     }
     
     @Test
-    public void testLogin() {
-        // Registramos un usuario específico para el test de login
-        Usuario loginUser = usuarioService.registrarUsuario("loginuser", "loginpass", "login@test.com");
-        assertNotNull("El usuario de login no debería ser null", loginUser);
-        assertNotNull("El ID del usuario de login no debería ser null", loginUser.id);
+    void deberiaLanzarExcepcionSiUsernameExiste() {
+        // Arrange
+        when(usuarioRepository.existsByUsername(testUser.getUsername())).thenReturn(true);
         
-        // Intentamos hacer login con credenciales correctas
-        boolean result = usuarioService.login("loginuser", "loginpass");
-        assertTrue("El login debería ser exitoso con credenciales correctas", result);
+        // Act & Assert
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            usuarioService.registrarUsuario(testUser);
+        });
         
-        // Intentamos hacer login con credenciales incorrectas
-        boolean resultFail = usuarioService.login("loginuser", "wrongpass");
-        assertFalse("El login debería fallar con contraseña incorrecta", resultFail);
-        
-        // Intentamos hacer login con usuario inexistente
-        boolean resultNoUser = usuarioService.login("nonexistent", "pass");
-        assertFalse("El login debería fallar con usuario inexistente", resultNoUser);
+        assertEquals("El nombre de usuario ya existe", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
     }
     
     @Test
-    public void testObtenerUsuariosPorRol() {
-        // Creamos varios usuarios con el mismo rol
-        Usuario user1 = usuarioService.registrarUsuario("user1", "pass1", "user1@test.com");
-        Usuario user2 = usuarioService.registrarUsuario("user2", "pass2", "user2@test.com");
+    void deberiaAutenticarUsuarioCorrectamente() {
+        // Arrange
+        when(usuarioRepository.findByUsername(testUser.getUsername()))
+            .thenReturn(Optional.of(testUser));
         
-        assertNotNull("user1 no debería ser null", user1);
-        assertNotNull("user2 no debería ser null", user2);
+        // Act
+        boolean result = usuarioService.autenticar(testUser.getUsername(), testUser.getPassword());
         
-        // Obtenemos todos los usuarios con rol USER
-        List<Usuario> usuarios = usuarioService.obtenerUsuariosPorRol("USER");
-        
-        // Verificamos la lista de usuarios
-        assertNotNull("La lista de usuarios no debería ser null", usuarios);
-        assertFalse("La lista de usuarios no debería estar vacía", usuarios.isEmpty());
-        assertTrue("Debería haber al menos 3 usuarios (testUser + 2 nuevos)", usuarios.size() >= 3);
-        
-        // Verificamos que los usuarios creados están en la lista
-        boolean contieneUser1 = usuarios.stream().anyMatch(u -> u.username.equals("user1"));
-        boolean contieneUser2 = usuarios.stream().anyMatch(u -> u.username.equals("user2"));
-        assertTrue("La lista debería contener user1", contieneUser1);
-        assertTrue("La lista debería contener user2", contieneUser2);
+        // Assert
+        assertTrue(result);
+        verify(usuarioRepository).findByUsername(testUser.getUsername());
     }
     
     @Test
-    public void testEstadisticas() {
-        // Verificamos que el usuario de prueba existe
-        assertNotNull("El usuario de prueba no debería ser null", testUser);
-        assertNotNull("El ID del usuario de prueba no debería ser null", testUser.id);
+    void deberiaObtenerUsuariosPorRol() {
+        // Arrange
+        List<Usuario> usuarios = new ArrayList<>();
+        usuarios.add(testUser);
+        Page<Usuario> page = new PageImpl<>(usuarios);
+        when(usuarioRepository.findByRole(eq("USER"), any(Pageable.class))).thenReturn(page);
         
-        // Obtenemos la información del usuario
-        String info = usuarioService.obtenerInformacionUsuario(testUser.id);
+        // Act
+        Page<Usuario> result = usuarioService.obtenerUsuariosPorRol("USER", pageable);
         
-        // Verificamos la información
-        assertNotNull("La información del usuario no debería ser null", info);
-        assertTrue("La información debería contener el username", info.contains(testUser.username));
-        assertTrue("La información debería contener el email", info.contains(testUser.email));
-        assertTrue("La información debería contener el rol", info.contains(testUser.role));
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(testUser.getUsername(), result.getContent().get(0).getUsername());
+        verify(usuarioRepository).findByRole(eq("USER"), any(Pageable.class));
     }
     
     @Test
-    public void testMultipleOperaciones() {
-        // Registramos usuarios
-        Usuario user1 = usuarioService.registrarUsuario("user1", "pass1", "user1@test.com");
-        Usuario user2 = usuarioService.registrarUsuario("user2", "pass2", "user2@test.com");
+    void deberiaObtenerUsuarioPorId() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUser));
         
-        // Verificamos que los usuarios se registraron correctamente
-        assertNotNull("user1 no debería ser null", user1);
-        assertNotNull("user2 no debería ser null", user2);
-        assertNotNull("El ID de user1 no debería ser null", user1.id);
-        assertNotNull("El ID de user2 no debería ser null", user2.id);
+        // Act
+        Optional<Usuario> result = usuarioService.obtenerUsuario(1L);
         
-        // Verificamos login
-        boolean login1 = usuarioService.login("user1", "pass1");
-        boolean login2 = usuarioService.login("user2", "pass2");
-        
-        assertTrue("Login de user1 debería ser exitoso", login1);
-        assertTrue("Login de user2 debería ser exitoso", login2);
-        
-        // Verificamos que podemos obtener la información de ambos usuarios
-        String info1 = usuarioService.obtenerInformacionUsuario(user1.id);
-        String info2 = usuarioService.obtenerInformacionUsuario(user2.id);
-        
-        assertNotNull("Info de user1 no debería ser null", info1);
-        assertNotNull("Info de user2 no debería ser null", info2);
-        assertTrue("Info de user1 debería contener el username", info1.contains("user1"));
-        assertTrue("Info de user2 debería contener el username", info2.contains("user2"));
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(testUser.getUsername(), result.get().getUsername());
+        verify(usuarioRepository).findById(1L);
     }
-} 
+    
+    @Test
+    void deberiaBuscarUsuarios() {
+        // Arrange
+        List<Usuario> usuarios = new ArrayList<>();
+        usuarios.add(testUser);
+        Page<Usuario> page = new PageImpl<>(usuarios);
+        when(usuarioRepository.searchUsers(anyString(), any(Pageable.class))).thenReturn(page);
+        
+        // Act
+        Page<Usuario> result = usuarioService.buscarUsuarios("test", pageable);
+        
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.getTotalElements());
+        verify(usuarioRepository).searchUsers(eq("test"), any(Pageable.class));
+    }
+    
+    @Test
+    void deberiaEliminarUsuario() {
+        // Arrange
+        doNothing().when(usuarioRepository).deleteById(1L);
+        
+        // Act
+        usuarioService.eliminarUsuario(1L);
+        
+        // Assert
+        verify(usuarioRepository).deleteById(1L);
+    }
+    
+    @Test
+    void deberiaActualizarUsuario() {
+        // Arrange
+        Usuario usuarioActualizado = new Usuario();
+        usuarioActualizado.setId(1L);
+        usuarioActualizado.setUsername("updated");
+        usuarioActualizado.setEmail("updated@test.com");
+        
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioActualizado);
+        
+        // Act
+        Usuario result = usuarioService.actualizarUsuario(1L, usuarioActualizado);
+        
+        // Assert
+        assertNotNull(result);
+        assertEquals("updated", result.getUsername());
+        assertEquals("updated@test.com", result.getEmail());
+        verify(usuarioRepository).save(any(Usuario.class));
+    }
+    
+    @Test
+    void deberiaLanzarExcepcionAlActualizarUsuarioInexistente() {
+        // Arrange
+        when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            usuarioService.actualizarUsuario(999L, testUser);
+        });
+        
+        assertEquals("Usuario no encontrado", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+}

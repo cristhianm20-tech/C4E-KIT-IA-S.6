@@ -1,103 +1,180 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.7.0' // Versión antigua intencionalmente
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'org.sonarqube' version '3.3'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'jacoco'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'org.owasp.dependencycheck' version '9.0.7'
+    id 'me.champeau.jmh' version '0.7.2'
 }
 
 group = 'com.proyecto'
 version = '0.0.1-SNAPSHOT'
 
-// ⚠️ Configuración intencionalmente problemática: Java 11 forzado
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
-// ⚠️ Repositorios no oficiales intencionalmente incluidos
-repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.spring.io/milestone") } // Repositorio no oficial
-    maven { url = uri("https://jitpack.io") } // Repositorio no oficial
+// ================================================================================================
+// JAVA 17 CONFIGURATION
+// ================================================================================================
+java {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
-// ⚠️ Dependencias con versiones antiguas y vulnerables
+// ================================================================================================
+// REPOSITORIES
+// ================================================================================================
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+// ================================================================================================
+// DEPENDENCY MANAGEMENT
+// ================================================================================================
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.2.0"
+        mavenBom "org.junit:junit-bom:5.10.1"
+    }
+}
+
+// ================================================================================================
+// DEPENDENCIES
+// ================================================================================================
 dependencies {
+    // Spring Boot Starters - Updated to 3.2.x
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'com.h2database:h2:1.4.200' // Versión antigua con vulnerabilidades conocidas
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     
-    // ⚠️ Dependencias de logging con configuraciones inseguras
-    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    // Database
+    runtimeOnly 'com.h2database:h2:2.2.224'
     
-    // ⚠️ JUnit 4 en lugar de JUnit 5
-    testImplementation 'junit:junit:4.13.2'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    // Performance Testing - JMH
+    jmhImplementation 'org.openjdk.jmh:jmh-core:1.37'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+    
+    // Testing - Migrated to JUnit 5
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    //testImplementation 'org.springframework.security:spring-security-test'
-    
-    // ⚠️ JMH para benchmarks ineficientes
-    testImplementation 'org.openjdk.jmh:jmh-core:1.21'
-    testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.21'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 project.tasks['sonarqube'].dependsOn 'jacocoTestReport'
 
-// ⚠️ Configuración de SonarQube con exclusiones problemáticas
+// ================================================================================================
+// SONARQUBE CONFIGURATION
+// ================================================================================================
 sonarqube {
     properties {
-        property "sonar.projectKey", "bad-practices-demo-IA"
-        property "sonar.host.url", "https://integracioncontinua.personalsoft.com"
-        //property "sonar.exclusions", "**/model/**,**/dto/**"
-        property "sonar.login", "d7526b284077b90cce0345f4966c2d4502324ae9" // Excluir paquetes importantes
-        property "sonar.java.coveragePlugin", "jacoco"
-        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.scm.provider", "git"
-        property "sonar.sources", "src/main/java"
-        property "sonar.tests", "src/test/java"
-        property "sonar.java.binaries", "build/classes/java/main"
-        property "sonar.java.test.binaries", "build/classes/java/test"
-        property "sonar.verbose", "true"
-        property "sonar.qualitygate.wait", "true"
-        property "sonar.branch.name", "live-coding"
+        property "sonar.projectKey", "spring-boot-migration"
+        property "sonar.projectName", "Spring Boot Migration Project"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.java.binaries", "${buildDir}/classes"
+        property "sonar.coverage.exclusions", [
+            "**/config/**",
+            "**/dto/**",
+            "**/entity/**",
+            "**/*Application*",
+            "**/*Config*"
+        ].join(",")
     }
 }
 
-// ⚠️ Configuración de JaCoCo con exclusiones problemáticas
+// ================================================================================================
+// JACOCO CONFIGURATION
+// ================================================================================================
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.11"
 }
 
 jacocoTestReport {
-    dependsOn test // Asegura que los tests se ejecuten antes de generar el reporte
+    dependsOn test
+    
     reports {
-        xml.enabled true
-        xml.destination file("build/reports/jacoco/test/jacocoTestReport.xml")
-        html.enabled true
-        html.destination file("build/reports/jacoco/test/html")
+        xml.required = true
+        html.required = true
+        csv.required = false
     }
+    
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                '**/model/**',
+                '**/config/**',
                 '**/dto/**',
-                '**/config/**'
+                '**/entity/**',
+                '**/*Application*',
+                '**/*Config*'
             ])
         }))
     }
 }
 
-// ⚠️ Task de benchmark ineficiente
-task benchmark(type: JavaExec) {
-    main = 'org.openjdk.jmh.Main'
-    classpath = sourceSets.test.runtimeClasspath
-    args = ['-f', '1', '-wi', '5', '-i', '5', '-r', '1s', '-w', '1s'] // Configuración ineficiente
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.85
+            }
+            excludes = [
+                '**/config/**',
+                '**/dto/**',
+                '**/entity/**',
+                '**/*Application*',
+                '**/*Config*'
+            ]
+        }
+    }
 }
 
-// Configuración de tests
+// ================================================================================================
+// JMH CONFIGURATION
+// ================================================================================================
+jmh {
+    iterations = 5
+    benchmarkMode = ['all']
+    batchSize = 1
+    fork = 2
+    warmupIterations = 3
+}
+
+// ================================================================================================
+// CUSTOM TASKS
+// ================================================================================================
+
+task qualityCheck {
+    dependsOn test, jacocoTestReport, jacocoTestCoverageVerification
+    group = 'verification'
+    description = 'Run all quality checks'
+}
+
+build.dependsOn qualityCheck
+
+// ================================================================================================
+// TESTING CONFIGURATION
+// ================================================================================================
 test {
-    useJUnit()
+    useJUnitPlatform()
+    
     testLogging {
         events "passed", "skipped", "failed"
-        exceptionFormat = 'full'
+        exceptionFormat "full"
+        showStandardStreams = true
     }
-} 
+    
+    finalizedBy jacocoTestReport
+}
