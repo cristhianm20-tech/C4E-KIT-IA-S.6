@@ -1,2 +1,2 @@
 
- 2javaX%hr4src/main/java/com/proyecto/mapper/UsuarioMapper.java
+ 2javaXhr<src/main/java/com/proyecto/repository/UsuarioRepository.java

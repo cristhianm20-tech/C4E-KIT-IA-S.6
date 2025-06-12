@@ -1,2 +1,1 @@
- 2javaX
-hr3src/main/java/com/proyecto/dto/LoginRequestDTO.java
+ 2javaXhr.src/main/java/com/proyecto/dto/UsuarioDTO.java

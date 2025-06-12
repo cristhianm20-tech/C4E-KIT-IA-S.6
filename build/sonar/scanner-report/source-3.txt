@@ -1,19 +1,92 @@
-package com.example;
+package com.proyecto.controller;
 
-public class Utils {
-    // Vulnerabilidad 1: Contraseña hardcodeada
-    private static final String DB_PASSWORD = "SuperSecretPassword123!";
+import com.proyecto.dto.LoginRequestDTO;
+import com.proyecto.dto.LoginResponseDTO;
+import com.proyecto.dto.UsuarioDTO;
+import com.proyecto.mapper.UsuarioMapper;
+import com.proyecto.service.UsuarioService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
+public class UsuarioController {
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
     
-    // Vulnerabilidad 2: Uso de System.out.println para logging
-    public static void logInfo(String message) {
-        System.out.println("[INFO] " + message);
+    private final UsuarioService usuarioService;
+    private final UsuarioMapper usuarioMapper;
+    
+    @PostMapping("/registro")
+    public ResponseEntity<UsuarioDTO> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para registrar Usuario : {}", usuarioDTO);
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.registrarUsuario(usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
     }
     
-    public static void logError(String message) {
-        System.out.println("[ERROR] " + message);
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        log.debug("REST request para login : {}", loginRequest.getUsername());
+        boolean success = usuarioService.autenticar(loginRequest.getUsername(), loginRequest.getPassword());
+        
+        LoginResponseDTO response = LoginResponseDTO.builder()
+            .success(success)
+            .message(success ? "Login exitoso" : "Credenciales inválidas")
+            .build();
+            
+        return ResponseEntity.ok(response);
     }
     
-    public static String getDatabasePassword() {
-        return DB_PASSWORD;
+    @GetMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable(value = "id") Long id) {
+        log.debug("REST request para obtener Usuario : {}", id);
+        return usuarioService.obtenerUsuario(id)
+            .map(usuarioMapper::toDTO)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
-} 
+    
+    @GetMapping("/rol/{role}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuariosPorRol(
+            @PathVariable String role) {
+        log.debug("REST request para obtener usuarios por rol : {}", role);
+        var usuarios = usuarioService.obtenerUsuariosPorRol(role);
+        var result = usuarioMapper.toDTO(usuarios);
+        return ResponseEntity.ok(result);
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<UsuarioDTO> buscarUsuarios(
+            @RequestParam String searchTerm) {
+        log.debug("REST request para buscar usuarios : {}", searchTerm);
+        var usuarios = usuarioService.buscarUsuarios(searchTerm);
+        var result = usuarioMapper.toDTO(usuarios);
+        return ResponseEntity.ok(result);
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable(value = "id") Long id) {
+        log.debug("REST request para eliminar Usuario : {}", id);
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioDTO> actualizarUsuario(
+            @PathVariable(value = "id") Long id,
+            @Valid @RequestBody UsuarioDTO usuarioDTO) {
+        log.debug("REST request para actualizar Usuario : {}, {}", id, usuarioDTO);
+        if (!id.equals(usuarioDTO.getId())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var usuario = usuarioMapper.toEntity(usuarioDTO);
+        var result = usuarioService.actualizarUsuario(id, usuario);
+        return ResponseEntity.ok(usuarioMapper.toDTO(result));
+    }
+}

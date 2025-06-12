@@ -1,28 +1,180 @@
-package com.proyecto.repository;
+package com.proyecto;
 
 import com.proyecto.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
+import com.proyecto.service.UsuarioService;
+import com.proyecto.repository.UsuarioRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
-@Repository
-public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class UsuarioServiceTest {
     
-    Optional<Usuario> findByUsername(String username);
+    @Mock
+    private UsuarioRepository usuarioRepository;
     
-    Optional<Usuario> findByEmail(String email);
+    @InjectMocks
+    private UsuarioService usuarioService;
     
-    @Query("SELECT u FROM Usuario u WHERE u.role = :role")
-    Usuario findByRole(@Param("role") String role);
+    private Usuario testUser;
     
-    @Query("SELECT u FROM Usuario u WHERE " +
-           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))")
-    Usuario searchUsers(@Param("search") String search);
+    @BeforeEach
+    void setup() {
+        testUser = new Usuario();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setPassword("password123");
+        testUser.setEmail("test@test.com");
+        testUser.setRole("USER");
+    }
     
-    boolean existsByUsername(String username);
+    @Test
+    void deberiaRegistrarUsuarioExitosamente() {
+        // Arrange
+        when(usuarioRepository.existsByUsername(testUser.getUsername())).thenReturn(false);
+        when(usuarioRepository.existsByEmail(testUser.getEmail())).thenReturn(false);
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(testUser);
+        
+        // Act
+        Usuario result = usuarioService.registrarUsuario(testUser);
+        
+        // Assert
+        assertNotNull(result);
+        assertEquals(testUser.getUsername(), result.getUsername());
+        assertEquals(testUser.getEmail(), result.getEmail());
+        assertEquals("USER", result.getRole());
+        verify(usuarioRepository).save(any(Usuario.class));
+    }
     
-    boolean existsByEmail(String email);
-} 
+    @Test
+    void deberiaLanzarExcepcionSiUsernameExiste() {
+        // Arrange
+        when(usuarioRepository.existsByUsername(testUser.getUsername())).thenReturn(true);
+        
+        // Act & Assert
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            usuarioService.registrarUsuario(testUser);
+        });
+        
+        assertEquals("El nombre de usuario ya existe", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+    
+    @Test
+    void deberiaAutenticarUsuarioCorrectamente() {
+        // Arrange
+        when(usuarioRepository.findByUsername(testUser.getUsername()))
+            .thenReturn(Optional.of(testUser));
+        
+        // Act
+        boolean result = usuarioService.autenticar(testUser.getUsername(), testUser.getPassword());
+        
+        // Assert
+        assertTrue(result);
+        verify(usuarioRepository).findByUsername(testUser.getUsername());
+    }
+    
+    @Test
+    void deberiaObtenerUsuariosPorRol() {
+        // Arrange
+        List<Usuario> usuarios = new ArrayList<>();
+        usuarios.add(testUser);
+        when(usuarioRepository.findByRole("USER")).thenReturn(usuarios.get(0));
+
+        // Act
+        Usuario result = usuarioService.obtenerUsuariosPorRol("USER");
+        
+        // Assert
+        assertNotNull(result);
+        assertEquals(testUser.getUsername(), result.getUsername());
+        verify(usuarioRepository).findByRole("USER");
+    }
+    
+    @Test
+    void deberiaObtenerUsuarioPorId() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        
+        // Act
+        Optional<Usuario> result = usuarioService.obtenerUsuario(1L);
+        
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(testUser.getUsername(), result.get().getUsername());
+        verify(usuarioRepository).findById(1L);
+    }
+    
+    @Test
+    void deberiaBuscarUsuarios() {
+        // Arrange
+        List<Usuario> usuarios = new ArrayList<>();
+        usuarios.add(testUser);
+        Usuario page = usuarios.get(0);
+        when(usuarioRepository.searchUsers(anyString())).thenReturn(page);
+        
+        // Act
+        Usuario result = usuarioService.buscarUsuarios("test");
+        
+        // Assert
+        assertNotNull(result);
+        assertEquals(testUser.getUsername(), result.getUsername());
+        verify(usuarioRepository).searchUsers("test");
+    }
+    
+    @Test
+    void deberiaEliminarUsuario() {
+        // Arrange
+        doNothing().when(usuarioRepository).deleteById(1L);
+        
+        // Act
+        usuarioService.eliminarUsuario(1L);
+        
+        // Assert
+        verify(usuarioRepository).deleteById(1L);
+    }
+    
+    @Test
+    void deberiaActualizarUsuario() {
+        // Arrange
+        Usuario usuarioActualizado = new Usuario();
+        usuarioActualizado.setId(1L);
+        usuarioActualizado.setUsername("updated");
+        usuarioActualizado.setEmail("updated@test.com");
+        
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioActualizado);
+        
+        // Act
+        Usuario result = usuarioService.actualizarUsuario(1L, usuarioActualizado);
+        
+        // Assert
+        assertNotNull(result);
+        assertEquals("updated", result.getUsername());
+        assertEquals("updated@test.com", result.getEmail());
+        verify(usuarioRepository).save(any(Usuario.class));
+    }
+    
+    @Test
+    void deberiaLanzarExcepcionAlActualizarUsuarioInexistente() {
+        // Arrange
+        when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            usuarioService.actualizarUsuario(999L, testUser);
+        });
+        
+        assertEquals("Usuario no encontrado", exception.getMessage());
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+}

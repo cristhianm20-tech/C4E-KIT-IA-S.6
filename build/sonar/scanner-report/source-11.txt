@@ -1,54 +1,83 @@
-package com.proyecto.model;
+package com.proyecto.service;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
+import com.proyecto.model.Usuario;
+import com.proyecto.repository.UsuarioRepository;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
-@Entity
-@Table(name = "usuarios")
-@Data
-@NoArgsConstructor
-public class Usuario {
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class UsuarioService {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
     
-    @NotBlank(message = "El nombre de usuario es obligatorio")
-    @Size(min = 3, max = 50, message = "El nombre de usuario debe tener entre 3 y 50 caracteres")
-    @Column(unique = true)
-    private String username;
-    
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
-    private String password;
-    
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email debe ser válido")
-    @Column(unique = true)
-    private String email;
-    
-    @NotBlank(message = "El rol es obligatorio")
-    private String role;
-    
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion = LocalDateTime.now();
-      @PrePersist
-    protected void onCreate() {
-        fechaCreacion = LocalDateTime.now();
+    private final UsuarioRepository usuarioRepository;
+
+    @Transactional
+    public Usuario registrarUsuario(@Valid Usuario usuario) {
+        log.debug("Registrando nuevo usuario: {}", usuario.getUsername());
+        
+        if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya existe");
+        }
+        
+        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+            throw new IllegalArgumentException("El email ya está registrado");
+        }
+        
+        usuario.setPassword(usuario.getPassword());
+        usuario.setRole("USER");
+        
+        return usuarioRepository.save(usuario);
     }
     
-    public boolean esAdmin() {
-        return "ADMIN".equalsIgnoreCase(this.role);
+    public boolean autenticar(String username, String password) {
+        log.debug("Intentando autenticar usuario: {}", username);
+        
+        return usuarioRepository.findByUsername(username)
+            .map(usuario -> usuario.getPassword().equals(password))
+            .orElse(false);
+    }
+    public Usuario obtenerUsuariosPorRol(String role) {
+        log.debug("Buscando usuarios por rol: {}", role);
+        return usuarioRepository.findByRole(role);
     }
     
-    @Override
-    public String toString() {
-        return String.format("Usuario[id=%d, username='%s', email='%s', role='%s']",
-            id, username, email, role);
+    public Optional<Usuario> obtenerUsuario(Long id) {
+        log.debug("Buscando usuario por ID: {}", id);
+        return usuarioRepository.findById(id);
+    }
+    
+    public Usuario buscarUsuarios(String searchTerm) {
+        log.debug("Buscando usuarios que coincidan con: {}", searchTerm);
+        return usuarioRepository.searchUsers(searchTerm);
+    }
+    
+    @Transactional
+    public void eliminarUsuario(Long id) {
+        log.debug("Eliminando usuario con ID: {}", id);
+        usuarioRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public Usuario actualizarUsuario(Long id, @Valid Usuario usuarioActualizado) {
+        log.debug("Actualizando usuario con ID: {}", id);
+        
+        return usuarioRepository.findById(id)
+            .map(usuario -> {
+                usuario.setUsername(usuarioActualizado.getUsername());
+                usuario.setEmail(usuarioActualizado.getEmail());
+                if (usuarioActualizado.getPassword() != null) {
+                    usuario.setPassword(usuarioActualizado.getPassword());
+                }
+                return usuarioRepository.save(usuario);
+            })
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
     }
 } 

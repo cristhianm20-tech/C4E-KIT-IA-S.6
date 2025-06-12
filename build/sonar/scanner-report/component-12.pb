@@ -1,1 +1,1 @@
- 2javaXhr<src/main/java/com/proyecto/repository/UsuarioRepository.java
+ (2javaX´hr2src/test/java/com/proyecto/UsuarioServiceTest.java

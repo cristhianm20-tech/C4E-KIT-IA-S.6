@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.proyecto.UsuarioServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2025-06-12T16:10:47" hostname="PSLT7240" time="5.906">
+<testsuite name="com.proyecto.UsuarioServiceTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2025-06-12T17:05:18" hostname="PSLT7240" time="10.568">
   <properties/>
-  <testcase name="deberiaRegistrarUsuarioExitosamente()" classname="com.proyecto.UsuarioServiceTest" time="5.806"/>
-  <testcase name="deberiaObtenerUsuarioPorId()" classname="com.proyecto.UsuarioServiceTest" time="0.015"/>
-  <testcase name="deberiaActualizarUsuario()" classname="com.proyecto.UsuarioServiceTest" time="0.012"/>
-  <testcase name="deberiaEliminarUsuario()" classname="com.proyecto.UsuarioServiceTest" time="0.014"/>
-  <testcase name="deberiaLanzarExcepcionSiUsernameExiste()" classname="com.proyecto.UsuarioServiceTest" time="0.013"/>
-  <testcase name="deberiaBuscarUsuarios()" classname="com.proyecto.UsuarioServiceTest" time="0.005"/>
-  <testcase name="deberiaAutenticarUsuarioCorrectamente()" classname="com.proyecto.UsuarioServiceTest" time="0.01"/>
-  <testcase name="deberiaObtenerUsuariosPorRol()" classname="com.proyecto.UsuarioServiceTest" time="0.008"/>
-  <testcase name="deberiaLanzarExcepcionAlActualizarUsuarioInexistente()" classname="com.proyecto.UsuarioServiceTest" time="0.006"/>
+  <testcase name="deberiaRegistrarUsuarioExitosamente()" classname="com.proyecto.UsuarioServiceTest" time="10.348"/>
+  <testcase name="deberiaObtenerUsuarioPorId()" classname="com.proyecto.UsuarioServiceTest" time="0.024"/>
+  <testcase name="deberiaActualizarUsuario()" classname="com.proyecto.UsuarioServiceTest" time="0.03"/>
+  <testcase name="deberiaEliminarUsuario()" classname="com.proyecto.UsuarioServiceTest" time="0.028"/>
+  <testcase name="deberiaLanzarExcepcionSiUsernameExiste()" classname="com.proyecto.UsuarioServiceTest" time="0.024"/>
+  <testcase name="deberiaBuscarUsuarios()" classname="com.proyecto.UsuarioServiceTest" time="0.013"/>
+  <testcase name="deberiaAutenticarUsuarioCorrectamente()" classname="com.proyecto.UsuarioServiceTest" time="0.02"/>
+  <testcase name="deberiaObtenerUsuariosPorRol()" classname="com.proyecto.UsuarioServiceTest" time="0.015"/>
+  <testcase name="deberiaLanzarExcepcionAlActualizarUsuarioInexistente()" classname="com.proyecto.UsuarioServiceTest" time="0.019"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

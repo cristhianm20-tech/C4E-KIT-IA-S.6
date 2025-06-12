@@ -3,5 +3,5 @@ serverUrl=https://integracioncontinua.personalsoft.com
 serverVersion=8.9.10.61524
 branch=solutions
 dashboardUrl=https://integracioncontinua.personalsoft.com/dashboard?id=bad-practices-demo-IA&branch=solutions
-ceTaskId=AZdk6U9FcnsevBYsJboi
-ceTaskUrl=https://integracioncontinua.personalsoft.com/api/ce/task?id=AZdk6U9FcnsevBYsJboi
+ceTaskId=AZdlG4dZcnsevBYsJbol
+ceTaskUrl=https://integracioncontinua.personalsoft.com/api/ce/task?id=AZdlG4dZcnsevBYsJbol
